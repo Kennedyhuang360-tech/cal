@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Smart Calculator Pro - 大字加強版</title>
+    <title>Smart Calculator Pro - 右下等於版</title>
     <style>
         :root {
             --bg: #f2f2f7; --card: #ffffff; --txt: #000000;
@@ -28,7 +28,6 @@
         
         .screen { background: rgba(150,150,150,0.1); border-radius: 15px; padding: 18px; text-align: right; margin-bottom: 15px; overflow: hidden; }
         
-        /* 螢幕字體極大化 */
         #display { 
             width: 100%; border: none; background: transparent; color: var(--txt); 
             font-size: 44px; text-align: right; font-weight: 800; outline: none;
@@ -37,17 +36,21 @@
         #display::-webkit-scrollbar { display: none; }
         #preview { font-size: 22px; color: var(--pre); font-weight: bold; height: 28px; margin-top: 5px; overflow: hidden; }
         
+        /* 5欄網格佈局 */
         .grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; }
         
-        /* 按鈕字體加大 */
         button { 
             width: 100%; aspect-ratio: 1; border: none; border-radius: 15px; 
             font-size: 22px; font-weight: bold; background: var(--btn); color: var(--txt); cursor: pointer; 
         }
         .btn-op { background: var(--op); color: #fff; font-size: 24px; }
         
-        /* 等於按鈕加大至佔用 3 格 */
-        .btn-eq { background: var(--eq); color: #fff; grid-column: span 3; aspect-ratio: auto; font-size: 28px; }
+        /* 特別處理等於按鈕：放在右下角並加大 */
+        .btn-eq { 
+            background: var(--eq); color: #fff; 
+            grid-column: 4 / 6; /* 橫跨最後兩欄 */
+            aspect-ratio: auto; font-size: 32px; 
+        }
         
         .btn-tool { background: #8e8e93; color: #fff; }
         .btn-undo { background: #5856d6; color: #fff; }
@@ -98,8 +101,8 @@
             <button onclick="add('0')">0</button>
             <button onclick="add('.')">.</button>
             <button onclick="tax()" id="tax-btn">+10%</button>
-            <button onclick="add('+')" class="btn-op">+</button>
-            <button onclick="calc()" class="btn-eq" style="grid-column: span 3;">=</button>
+            <button onclick="add('+')" class="btn-op" style="display:none;">+</button> <button onclick="add('+')" class="btn-op" style="grid-column: 4/5;">+</button>
+            <button onclick="calc()" class="btn-eq" style="grid-column: 5/6; grid-row: 4/6; aspect-ratio: auto;">=</button>
         </div>
     </div>
     <div class="hist-box">
