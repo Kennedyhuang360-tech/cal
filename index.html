@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Smart Calculator Pro - Final</title>
+    <title>Smart Calculator Pro - 佈局優化版</title>
     <style>
         :root {
             --bg: #f2f2f7; --card: #ffffff; --txt: #000000;
@@ -46,10 +46,10 @@
         .btn-tool { background: #8e8e93; color: #fff; font-size: 18px; }
         .btn-undo { background: #5856d6; color: #fff; }
         
-        /* 特別處理：等於按鈕垂直拉長，放在右下角 */
+        /* 特別處理：等於按鈕 1x4 橫跨底端 */
         .btn-eq { 
             background: var(--eq); color: #fff; 
-            grid-column: 5; grid-row: 4 / 6; /* 佔據第5欄的第4與第5列 */
+            grid-column: 1 / 5; /* 橫跨 1~4 欄 */
             aspect-ratio: auto; height: 100%; font-size: 32px; 
         }
         
@@ -100,10 +100,10 @@
             <button onclick="add('0')">0</button>
             <button onclick="add('.')">.</button>
             <button onclick="tax()" id="tax-btn">+10%</button>
-            <button onclick="add('+')" class="btn-op">+</button>
+            <button onclick="cls()" style="display:none;"></button> <button onclick="add('+')" class="btn-op">+</button>
             
             <button onclick="calc()" class="btn-eq">=</button>
-        </div>
+            <button style="visibility: hidden;"></button> </div>
     </div>
     <div class="hist-box">
         <div class="hist-top">
