@@ -158,3 +158,92 @@
 
 </body>
 </html>
+            <button onclick="add('4')">4</button>
+            <button onclick="add('5')">5</button>
+            <button onclick="add('6')">6</button>
+            <button onclick="unit(25.4,'/')">/25.4</button>
+            <button onclick="add('-')" class="btn-op">-</button>
+
+            <button onclick="add('1')">1</button>
+            <button onclick="add('2')">2</button>
+            <button onclick="add('3')">3</button>
+            <button onclick="unit(100,'*')">x100</button>
+            <button onclick="add('+')" class="btn-op">+</button>
+
+            <button onclick="add('0')">0</button>
+            <button onclick="add('.')">.</button>
+            <button onclick="tax()">+10%</button>
+            <button onclick="calc()" class="btn-eq">=</button>
+        </div>
+    </div>
+    
+    <div class="history-panel">
+        <div style="display:flex; justify-content:space-between;">
+            <strong>歷史紀錄</strong>
+            <small onclick="localStorage.clear(); location.reload();" style="color:red; cursor:pointer;">清空</small>
+        </div>
+        <ul id="history-list"></ul>
+    </div>
+</div>
+
+<script>
+    let exp = "0";
+    let done = false;
+    const box = document.getElementById('display');
+    const hist = document.getElementById('history-list');
+
+    function fmt(s) {
+        return s.replace(/,/g, '').replace(/\d+\.?\d*/g, m => {
+            let p = m.split('.');
+            p[0] = p[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+            return p.join('.');
+        });
+    }
+
+    function add(v) {
+        if (done) {
+            if (['+','-','*','/'].includes(v)) done = false;
+            else { exp = "0"; done = false; }
+        }
+        if (exp === "0" && v !== "." && !['+','-','*','/'].includes(v)) exp = v;
+        else exp += v;
+        render();
+    }
+
+    function del() {
+        if (done) { cls(); return; }
+        exp = exp.length > 1 ? exp.slice(0, -1) : "0";
+        render();
+    }
+
+    function cls() { exp = "0"; done = false; render(); }
+
+    function render() { box.value = fmt(exp); }
+
+    function calc() {
+        try {
+            let res = eval(exp.replace(/,/g, ''));
+            let rStr = parseFloat(res.toPrecision(12)).toString();
+            let li = document.createElement('li');
+            li.innerHTML = `<div>${exp}</div><strong>= ${fmt(rStr)}</strong>`;
+            hist.prepend(li);
+            exp = rStr;
+            done = true;
+            render();
+        } catch { box.value = "Error"; exp = "0"; }
+    }
+
+    function unit(f, op) {
+        let nums = exp.match(/(\d+\.?\d*)$/);
+        if (nums) {
+            let n = eval(nums[0] + op + f);
+            exp = exp.replace(/(\d+\.?\d*)$/, parseFloat(n.toPrecision(12)).toString());
+            render();
+        }
+    }
+
+    function tax() { unit(1.1, '*'); }
+</script>
+
+</body>
+</html>
