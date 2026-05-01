@@ -211,3 +211,180 @@
 
 </body>
 </html>
+        }
+        
+        .buttons { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
+        
+        button {
+            aspect-ratio: 1 / 1; border: none; border-radius: 12px;
+            font-size: 1.1rem; font-weight: bold; cursor: pointer;
+            background: var(--btn); color: var(--txt);
+        }
+        button:active { opacity: 0.7; }
+        .btn-op { background: var(--op); color: white; }
+        .btn-eq { background: var(--eq); color: white; grid-column: span 2; aspect-ratio: auto; }
+        .btn-tool { background: #8e8e93; color: white; }
+
+        .history-panel { background: var(--card); padding: 15px; border-radius: 20px; }
+        #history-list { list-style: none; padding: 0; max-height: 150px; overflow-y: auto; font-size: 0.85rem; margin: 10px 0 0 0; }
+        #history-list li { border-bottom: 1px solid rgba(0,0,0,0.05); padding: 8px 0; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="calc-card">
+        <div class="top-bar">
+            <span onclick="document.body.toggleAttribute('data-theme')" style="cursor:pointer;">🌓 主題切換</span>
+            <span id="rate-ui">稅率/加價: 10%</span>
+        </div>
+        <div class="display-area">
+            <input type="text" id="display" value="0" readonly>
+            <div id="preview"></div>
+        </div>
+        <div class="buttons">
+            <button onclick="cls()" class="btn-tool">AC</button>
+            <button onclick="add('(')">(</button>
+            <button onclick="add(')')">)</button>
+            <button onclick="del()" class="btn-tool">DEL</button>
+            <button onclick="add('/')" class="btn-op">÷</button>
+
+            <button onclick="add('7')">7</button>
+            <button onclick="add('8')">8</button>
+            <button onclick="add('9')">9</button>
+            <button onclick="unit(25.4,'*')">x25.4</button>
+            <button onclick="add('*')" class="btn-op">×</button>
+
+            <button onclick="add('4')">4</button>
+            <button onclick="add('5')">5</button>
+            <button onclick="add('6')">6</button>
+            <button onclick="unit(25.4,'/')">/25.4</button>
+            <button onclick="add('-')" class="btn-op">-</button>
+
+            <button onclick="add('1')">1</button>
+            <button onclick="add('2')">2</button>
+            <button onclick="add('3')">3</button>
+            <button onclick="unit(100,'*')">x100</button>
+            <button onclick="add('+')" class="btn-op">+</button>
+
+            <button onclick="add('0')">0</button>
+            <button onclick="add('.')">.</button>
+            <button onclick="tax()">+10%</button>
+            <button onclick="calc()" class="btn-eq">=</button>
+        </div>
+    </div>
+    
+    <div class="history-panel">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+            <strong>歷史紀錄</strong>
+            <small onclick="clearHistory()" style="color:red; cursor:pointer; font-weight:bold;">清空</small>
+        </div>
+        <ul id="history-list"></ul>
+    </div>
+</div>
+
+<script>
+    let exp = "0";
+    let done = false;
+    const box = document.getElementById('display');
+    const pre = document.getElementById('preview');
+    const hist = document.getElementById('history-list');
+
+    // 格式化數字顯示千分位
+    function fmt(s) {
+        if (!s) return "";
+        return s.toString().replace(/,/g, '').replace(/\d+\.?\d*/g, m => {
+            let p = m.split('.');
+            p[0] = p[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+            return p.join('.');
+        });
+    }
+
+    function add(v) {
+        const ops = ['+','-','*','/'];
+        if (done) {
+            if (ops.includes(v)) {
+                done = false;
+            } else {
+                exp = "0";
+                done = false;
+            }
+        }
+        if (exp === "0" && v !== "." && !ops.includes(v)) exp = v;
+        else exp += v;
+        render();
+    }
+
+    function del() {
+        if (done) { cls(); return; }
+        exp = exp.length > 1 ? exp.slice(0, -1) : "0";
+        render();
+    }
+
+    function cls() { exp = "0"; done = false; render(); }
+
+    function render() {
+        box.value = fmt(exp);
+        updatePreview();
+    }
+
+    // 即時預覽邏輯
+    function updatePreview() {
+        const ops = ['+','-','*','/'];
+        let raw = exp.replace(/,/g, '');
+        // 只有在包含運算符且結尾不是運算符時才顯示預覽
+        if (ops.some(o => raw.includes(o)) && !ops.includes(raw.slice(-1))) {
+            try {
+                let res = new Function('return ' + raw)();
+                if (res !== undefined && !isNaN(res)) {
+                    pre.innerText = "= " + fmt(parseFloat(res.toPrecision(12)).toString());
+                    return;
+                }
+            } catch (e) {}
+        }
+        pre.innerText = "";
+    }
+
+    function calc() {
+        try {
+            let raw = exp.replace(/,/g, '');
+            if (raw === "0") return;
+            let res = new Function('return ' + raw)();
+            let rStr = parseFloat(res.toPrecision(12)).toString();
+            
+            // 存入紀錄
+            let li = document.createElement('li');
+            li.innerHTML = `<div style="color:#888">${fmt(exp)}</div><strong>= ${fmt(rStr)}</strong>`;
+            li.onclick = () => { exp = rStr; done = false; render(); };
+            hist.prepend(li);
+            
+            exp = rStr;
+            done = true;
+            render();
+        } catch { 
+            box.value = "Error"; 
+            exp = "0"; 
+            pre.innerText = "";
+        }
+    }
+
+    function unit(f, op) {
+        let match = exp.match(/(\d+\.?\d*)$/);
+        if (match) {
+            let lastNum = match[0];
+            let newVal = new Function(`return ${lastNum} ${op} ${f}`)();
+            let rStr = parseFloat(newVal.toPrecision(12)).toString();
+            exp = exp.substring(0, exp.length - lastNum.length) + rStr;
+            render();
+        }
+    }
+
+    function tax() { unit(1.1, '*'); }
+
+    function clearHistory() {
+        if(confirm("確定清空歷史紀錄？")) hist.innerHTML = "";
+    }
+</script>
+
+</body>
+</html>
