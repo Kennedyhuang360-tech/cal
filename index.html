@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Smart Calculator Pro v1.5.0</title>
+    <title>Smart Calculator Pro v1.5.1</title>
     <style>
         :root {
             --bg: #f2f2f7; --card: #ffffff; --txt: #000000;
@@ -60,8 +60,6 @@
         .hist-top { display:flex; justify-content:space-between; margin-bottom: 10px; }
         #h-list { list-style: none; max-height: 150px; overflow-y: auto; font-size: 14px; scroll-behavior: smooth; }
         #h-list li { border-bottom: 1px solid rgba(128,128,128,0.1); padding: 10px 0; cursor: pointer; }
-        
-        /* 版本號樣式 */
         .ver { font-size: 10px; color: #888; position: absolute; bottom: 5px; right: 15px; opacity: 0.6; }
     </style>
 </head>
@@ -117,12 +115,13 @@
             <small onclick="clearHist()" style="color:red; cursor:pointer; font-weight:bold;">清空</small>
         </div>
         <ul id="h-list"></ul>
-        <div class="ver">v1.5.0</div>
+        <div class="ver">v1.5.1</div>
     </div>
 </div>
 
 <script>
     var exp = '0', done = false, rate1 = 10, rate2 = 5, undoStack = [];
+    var ops = ['+', '-', '*', '/'];
     var box = document.getElementById('display'), pre = document.getElementById('preview'), list = document.getElementById('h-list');
 
     function save() {
@@ -158,7 +157,6 @@
     }
 
     function add(v) {
-        var ops = ['+', '-', '*', '/'];
         if (done) { 
             if (ops.includes(v)) done = false; 
             else { exp = '0'; done = false; } 
@@ -206,8 +204,16 @@
     function calc() {
         try {
             var raw = exp.replace(/,/g, '');
+            
+            // --- 修正：如果結尾是運算符，自動刪除它 ---
+            while (raw.length > 0 && ops.includes(raw.slice(-1))) {
+                raw = raw.slice(0, -1);
+            }
+            if (raw === "" || raw === "0") return;
+
             var o = (raw.match(/\(/g) || []).length, c = (raw.match(/\)/g) || []).length;
             while (o > c) { raw += ')'; o--; }
+            
             var r = new Function('return ' + raw)();
             var s = limitPrecision(r);
             var li = document.createElement('li');
@@ -215,10 +221,13 @@
             li.onclick = function() { exp = s; done = false; render(); };
             
             list.prepend(li);
-            list.scrollTop = 0; // 自動捲到歷史最上方
+            list.scrollTop = 0;
             
             exp = s; done = true; render();
-        } catch(e) { box.value = 'Error'; exp = '0'; }
+        } catch(e) { 
+            box.value = 'Error'; 
+            exp = '0'; 
+        }
     }
 
     function unit(f, op) {
