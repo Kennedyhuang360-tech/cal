@@ -3,68 +3,49 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Smart Calc Pro</title>
+    <title>Smart Calculator</title>
     <style>
-        :root {
-            --bg: #f2f2f7; --card: #ffffff; --txt: #000000;
-            --op: #ff9f0a; --eq: #34c759; --btn: #e5e5ea; --pre: #007aff;
-        }
-        [data-theme="dark"] {
-            --bg: #000000; --card: #1c1c1e; --txt: #ffffff;
-            --op: #ff9f0a; --eq: #30d158; --btn: #3a3a3c; --pre: #5ac8fa;
-        }
+        :root { --bg: #f2f2f7; --card: #fff; --txt: #000; --op: #ff9f0a; --eq: #34c759; --btn: #e5e5ea; }
+        [data-theme="dark"] { --bg: #000; --card: #1c1c1e; --txt: #fff; --op: #ff9f0a; --eq: #30d158; --btn: #3a3a3c; }
         * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-        body { 
-            font-family: -apple-system, sans-serif; background: var(--bg); color: var(--txt);
-            padding: 10px; min-height: 100vh; line-height: 1.4;
-        }
-        .main-wrapper { width: 100%; max-width: 400px; margin: 0 auto; overflow: hidden; }
-        .calc-card { 
-            background: var(--card); padding: 15px; border-radius: 20px; 
-            box-shadow: 0 5px 20px rgba(0,0,0,0.1); margin-bottom: 15px;
-        }
-        .top-bar { display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 14px; font-weight: bold; }
-        .display-box { 
-            background: rgba(128,128,128,0.08); border-radius: 12px; padding: 15px; 
-            margin-bottom: 15px; text-align: right; overflow: hidden;
-        }
-        #display {
-            width: 100%; border: none; background: transparent; color: var(--txt); 
-            font-size: 32px; text-align: right; outline: none; font-weight: bold;
-        }
-        #preview { font-size: 18px; color: var(--pre); font-weight: bold; height: 24px; margin-top: 5px; }
-        .btn-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
-        button {
-            width: 100%; aspect-ratio: 1; border: none; border-radius: 12px;
-            font-size: 18px; font-weight: bold; cursor: pointer;
-            background: var(--btn); color: var(--txt);
-        }
+        body { font-family: sans-serif; background: var(--bg); color: var(--txt); padding: 10px; }
+        
+        /* 極簡容器 */
+        .wrap { width: 100%; max-width: 400px; margin: 0 auto; }
+        .box { background: var(--card); padding: 15px; border-radius: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); margin-bottom: 15px; }
+        
+        /* 顯示區 */
+        .res-area { background: rgba(150,150,150,0.1); border-radius: 12px; padding: 15px; text-align: right; margin-bottom: 15px; }
+        #display { width: 100%; border: none; background: transparent; color: var(--txt); font-size: 30px; text-align: right; font-weight: bold; outline: none; }
+        #preview { font-size: 18px; color: #007aff; font-weight: bold; height: 22px; margin-top: 5px; }
+        
+        /* 按鈕網格 */
+        .grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
+        button { width: 100%; aspect-ratio: 1; border: none; border-radius: 12px; font-size: 18px; font-weight: bold; background: var(--btn); color: var(--txt); }
+        .btn-op { background: var(--op); color: #fff; }
+        .btn-eq { background: var(--eq); color: #fff; grid-column: span 2; aspect-ratio: auto; }
+        .btn-tool { background: #8e8e93; color: #fff; }
         button:active { opacity: 0.6; }
-        .btn-op { background: var(--op); color: white; }
-        .btn-eq { background: var(--eq); color: white; grid-column: span 2; aspect-ratio: auto; }
-        .btn-tool { background: #8e8e93; color: white; }
-        .history-card { background: var(--card); padding: 15px; border-radius: 20px; width: 100%; }
-        .hist-header { display:flex; justify-content:space-between; margin-bottom: 10px; font-size: 14px; }
-        #history-list { list-style: none; max-height: 150px; overflow-y: auto; font-size: 14px; }
-        #history-list li { border-bottom: 1px solid rgba(0,0,0,0.05); padding: 10px 0; }
+
+        /* 歷史紀錄 */
+        .hist { background: var(--card); padding: 15px; border-radius: 20px; }
+        #hist-list { list-style: none; max-height: 140px; overflow-y: auto; font-size: 14px; margin-top: 10px; }
+        #hist-list li { border-bottom: 1px solid rgba(0,0,0,0.05); padding: 8px 0; }
     </style>
 </head>
 <body>
 
-<div class="main-wrapper">
-    <div class="calc-card">
-        <div class="top-bar">
-            <span onclick="document.body.toggleAttribute('data-theme')" style="cursor:pointer;">🌓 主題切換</span>
-            <div>
-                <span id="rate-ui">稅率: 10%</span>
-                <span onclick="setRate()" style="cursor:pointer; margin-left:5px;">⚙️</span>
-            </div>
+<div class="wrap">
+    <div class="box">
+        <div style="display:flex; justify-content:space-between; margin-bottom:10px; font-size:12px;">
+            <span onclick="document.body.toggleAttribute('data-theme')" style="cursor:pointer;">🌓 主題</span>
+            <span id="rate-ui" onclick="setRate()">稅率: 10% ⚙️</span>
         </div>
-        <div class="display-box">
+        <div class="res-area">
             <input type="text" id="display" value="0" readonly>
             <div id="preview"></div>
         </div>
-        <div class="btn-grid">
+        <div class="grid">
             <button onclick="cls()" class="btn-tool">AC</button>
             <button onclick="add('(')">(</button>
             <button onclick="add(')')">)</button>
@@ -91,65 +72,69 @@
             <button onclick="calc()" class="btn-eq">=</button>
         </div>
     </div>
-    <div class="history-card">
-        <div class="hist-header"><strong>歷史紀錄</strong><span onclick="clearHist()" style="color:red; cursor:pointer;">清空</span></div>
-        <ul id="history-list"></ul>
+    <div class="hist">
+        <strong>歷史紀錄</strong>
+        <ul id="hist-list"></ul>
     </div>
 </div>
 
 <script>
-    var exp = "0", done = false, rate = 10;
+    var exp = '0', done = false, rate = 10;
+    var box = document.getElementById('display');
+    var pre = document.getElementById('preview');
+    var list = document.getElementById('hist-list');
+
     function fmt(s) {
         var n = s.toString().replace(/,/g, '');
         return n.replace(/\d+\.?\d*/g, function(m) {
             var p = m.split('.');
-            p[0] = p[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+            p[0] = p[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
             return p.join('.');
         });
     }
+
     function add(v) {
-        if (done) { if (['+','-','*','/'].includes(v)) done = false; else { exp = "0"; done = false; } }
-        if (exp === "0" && v !== "." && !['+','-','*','/'].includes(v) && v !== '(') exp = v;
+        if (done) { if (['+','-','*','/'].includes(v)) done = false; else { exp = '0'; done = false; } }
+        if (exp === '0' && v !== '.' && !['+','-','*','/'].includes(v)) exp = v;
         else exp += v;
         render();
     }
-    function del() { if (done) { cls(); return; } exp = exp.length > 1 ? exp.slice(0, -1) : "0"; render(); }
-    function cls() { exp = "0"; done = false; render(); }
-    function render() { document.getElementById('display').value = fmt(exp); updatePre(); }
+
+    function del() { if (done) { cls(); return; } exp = exp.length > 1 ? exp.slice(0, -1) : '0'; render(); }
+    function cls() { exp = '0'; done = false; render(); }
+    function render() { box.value = fmt(exp); updatePre(); }
+
     function updatePre() {
         var raw = exp.replace(/,/g, '');
         if (/[+\-*/]/.test(raw)) {
             try {
-                var temp = raw;
-                while (temp && /[+\-*/.(]$/.test(temp)) temp = temp.slice(0,-1);
-                var open = (temp.match(/\(/g) || []).length, close = (temp.match(/\)/g) || []).length;
-                while (open > close) { temp += ')'; open--; }
-                if (temp) {
-                    var r = new Function('return ' + temp)();
-                    if (r !== undefined && !isNaN(r) && isFinite(r)) {
-                        document.getElementById('preview').innerText = "= " + fmt(parseFloat(r.toPrecision(12)));
-                        return;
-                    }
+                var t = raw;
+                while (t && /[+\-*/.(]$/.test(t)) t = t.slice(0,-1);
+                var o = (t.match(/\(/g) || []).length, c = (t.match(/\)/g) || []).length;
+                while (o > c) { t += ')'; o--; }
+                if (t) {
+                    var r = new Function('return ' + t)();
+                    if (r !== undefined && !isNaN(r)) { pre.innerText = '= ' + fmt(parseFloat(r.toPrecision(12))); return; }
                 }
             } catch(e) {}
         }
-        document.getElementById('preview').innerText = "";
+        pre.innerText = '';
     }
+
     function calc() {
         try {
             var raw = exp.replace(/,/g, '');
-            var open = (raw.match(/\(/g) || []).length, close = (raw.match(/\)/g) || []).length;
-            while (open > close) { raw += ')'; open--; }
+            var o = (raw.match(/\(/g) || []).length, c = (raw.match(/\)/g) || []).length;
+            while (o > c) { raw += ')'; o--; }
             var r = new Function('return ' + raw)();
             var s = parseFloat(r.toPrecision(12)).toString();
             var li = document.createElement('li');
-            // 改用傳統字串相加，避免樣板字串出錯
-            li.innerHTML = '<div style="color:gray;font-size:12px">' + fmt(raw) + '</div><strong>= ' + fmt(s) + '</strong>';
-            li.onclick = function() { exp = s; done = false; render(); };
-            document.getElementById('history-list').prepend(li);
+            li.innerHTML = '<div style="color:gray;font-size:11px">' + fmt(raw) + '</div><strong>= ' + fmt(s) + '</strong>';
+            list.prepend(li);
             exp = s; done = true; render();
-        } catch(e) { document.getElementById('display').value = "Error"; exp = "0"; }
+        } catch(e) { box.value = 'Error'; exp = '0'; }
     }
+
     function unit(f, op) {
         var m = exp.match(/(\d+\.?\d*)$/);
         if (m) {
@@ -158,16 +143,16 @@
             render();
         }
     }
+
     function tax() { unit(1 + (rate/100), '*'); }
     function setRate() {
-        var v = prompt("輸入稅率(%):", rate);
-        if (v !== null && !isNaN(v) && v !== "") {
+        var v = prompt('輸入稅率(%):', rate);
+        if (v !== null && !isNaN(v) && v !== '') {
             rate = parseFloat(v);
-            document.getElementById('rate-ui').innerText = "稅率: " + rate + "%";
-            document.getElementById('tax-btn').innerText = "+" + rate + "%";
+            document.getElementById('rate-ui').innerText = '稅率: ' + rate + '% ⚙️';
+            document.getElementById('tax-btn').innerText = '+' + rate + '%';
         }
     }
-    function clearHist() { document.getElementById('history-list').innerHTML = ""; }
 </script>
 </body>
 </html>
