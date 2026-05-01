@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Smart Calculator Pro - 客製佈局版</title>
+    <title>Smart Calculator Pro - 旗艦版</title>
     <style>
         :root {
             --bg: #f2f2f7; --card: #ffffff; --txt: #000000;
@@ -26,7 +26,7 @@
         }
         
         .top { display: flex; justify-content: space-between; margin-bottom: 15px; font-size: 13px; font-weight: bold; align-items: center; gap: 5px; }
-        .rate-tag { padding: 4px 8px; background: var(--btn); border-radius: 6px; cursor: pointer; }
+        .rate-tag { padding: 6px 10px; background: var(--btn); border-radius: 8px; cursor: pointer; }
 
         .screen { background: rgba(150,150,150,0.1); border-radius: 15px; padding: 18px; text-align: right; margin-bottom: 15px; overflow: hidden; }
         #display { 
@@ -67,7 +67,7 @@
 <div class="wrap">
     <div class="box">
         <div class="top">
-            <span onclick="toggleMode()" style="cursor:pointer; padding:6px 10px; background:var(--btn); border-radius:8px;">🌓 主題</span>
+            <span onclick="toggleMode()" style="cursor:pointer; padding:6px 12px; background:var(--btn); border-radius:10px;">🌓 主題</span>
             <span class="rate-tag" onclick="setRate(1)">⚙️1: <span id="r1-ui">10%</span></span>
             <span class="rate-tag" onclick="setRate(2)">⚙️2: <span id="r2-ui">5%</span></span>
         </div>
@@ -138,6 +138,13 @@
         }
     }
 
+    // 格式化數字與處理小數點溢出
+    function limitPrecision(val) {
+        if (isNaN(val)) return "0";
+        // 如果是整數就直接回傳，如果是小數則限制到 10 位，parseFloat 會移除結尾多餘的 0
+        return parseFloat(Number(val).toFixed(10)).toString();
+    }
+
     function fmt(s) {
         var n = s.toString().replace(/,/g, '');
         return n.replace(/\d+\.?\d*/g, function(m) {
@@ -175,7 +182,7 @@
                 if (t) {
                     var r = new Function('return ' + t)();
                     if (r !== undefined && !isNaN(r)) { 
-                        pre.innerText = "= " + fmt(parseFloat(r.toPrecision(12))); 
+                        pre.innerText = "= " + fmt(limitPrecision(r)); 
                         return; 
                     }
                 }
@@ -190,7 +197,8 @@
             var o = (raw.match(/\(/g) || []).length, c = (raw.match(/\)/g) || []).length;
             while (o > c) { raw += ')'; o--; }
             var r = new Function('return ' + raw)();
-            var s = parseFloat(r.toPrecision(12)).toString();
+            var s = limitPrecision(r);
+            
             var li = document.createElement('li');
             li.innerHTML = '<div style="color:gray;font-size:11px">' + fmt(raw) + '</div><strong>= ' + fmt(s) + '</strong>';
             li.onclick = function() { exp = s; done = false; render(); };
@@ -203,7 +211,7 @@
         var m = exp.match(/(\d+\.?\d*)$/);
         if (m) {
             var n = new Function('return ' + m[0] + op + f)();
-            exp = exp.substring(0, exp.length - m[0].length) + parseFloat(n.toPrecision(12)).toString();
+            exp = exp.substring(0, exp.length - m[0].length) + limitPrecision(n);
             render();
         }
     }
