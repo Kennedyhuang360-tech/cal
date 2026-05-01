@@ -1,155 +1,160 @@
-<style>
-    :root {
-        --bg-color: #f0f2f5;
-        --card-bg: #ffffff;
-        --text-primary: #333;
-        --text-secondary: #888;
-        --text-preview: #007aff;
-        --border-color: #f0f0f0;
-        --btn-bg: #e9ecef;
-        --btn-text: #495057;
-        --accent-color: #007aff;
-        --op-color: #ff9f0a;
-        --equal-color: #34c759;
-        --extra-color: #5856d6;
-        --unit-color: #5ac8fa;
-    }
-
-    [data-theme="dark"] {
-        --bg-color: #1c1c1e;
-        --card-bg: #2c2c2e;
-        --text-primary: #ffffff;
-        --text-secondary: #aaa;
-        --text-preview: #5ac8fa;
-        --border-color: #3a3a3c;
-        --btn-bg: #3a3a3c;
-        --btn-text: #ffffff;
-    }
-
-    /* 基礎重置，防止縮放問題 */
-    * { box-sizing: border-box; }
-
-    body {
-        font-family: 'Segoe UI', 'Microsoft JhengHei', sans-serif;
-        display: flex;
-        justify-content: center;
-        align-items: flex-start; /* 手機上從頂部開始排版 */
-        min-height: 100vh;
-        margin: 0;
-        padding: 10px; /* 給邊緣一點留白 */
-        background-color: var(--bg-color);
-        color: var(--text-primary);
-        transition: background 0.3s ease;
-    }
-
-    .container {
-        display: flex;
-        flex-direction: column; /* 預設垂直排列，適合手機 */
-        gap: 20px;
-        background: var(--card-bg);
-        padding: 15px;
-        border-radius: 24px;
-        box-shadow: 0 15px 35px rgba(0,0,0,0.2);
-        width: 100%;
-        max-width: 440px; /* 限制最大寬度防止變形 */
-    }
-
-    .calculator { width: 100%; }
-
-    .top-bar {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 12px;
-    }
-
-    .icon-group { display: flex; gap: 10px; }
-
-    .icon-btn {
-        background: none; border: none; cursor: pointer;
-        font-size: 1.2rem; color: var(--text-primary);
-        padding: 5px; border-radius: 8px;
-    }
-
-    .display-container {
-        position: relative;
-        margin-bottom: 15px;
-    }
-
-    #display {
-        width: 100%; height: 90px; 
-        font-size: 2.2rem !important; 
-        font-weight: 800;
-        text-align: right; 
-        padding: 10px 15px 35px 15px;
-        border: 2px solid var(--border-color);
-        background: var(--bg-color); border-radius: 15px;
-        color: var(--text-primary); outline: none;
-        overflow: hidden;
-    }
-
-    #preview {
-        position: absolute;
-        right: 15px;
-        bottom: 10px;
-        font-size: 1.1rem;
-        font-weight: 700;
-        color: var(--text-preview);
-        opacity: 0.8;
-    }
-
-    .buttons {
-        display: grid; 
-        grid-template-columns: repeat(5, 1fr); 
-        gap: 8px; /* 縮小間距適配小螢幕 */
-    }
-
-    button.calc-btn {
-        padding: 15px 0; 
-        font-size: 1.3rem; 
-        font-weight: 800;
-        border: none; border-radius: 12px; cursor: pointer;
-        background: var(--btn-bg); color: var(--btn-text);
-        transition: all 0.1s; -webkit-tap-highlight-color: transparent;
-    }
-
-    /* 調整特殊按鈕大小防止擠壓 */
-    .btn-op { background: var(--op-color) !important; color: white !important; font-size: 1.5rem !important; }
-    .btn-special { background: var(--accent-color) !important; color: white !important; font-size: 1.1rem !important; }
-    .btn-extra { background: var(--extra-color) !important; color: white !important; font-size: 1rem !important; }
-    .btn-unit { background: var(--unit-color) !important; color: white !important; font-size: 0.9rem !important; }
-    .btn-equal { background: var(--equal-color) !important; color: white !important; font-size: 1.8rem !important; }
-    .btn-tool { background: #adb5bd !important; color: white !important; font-size: 1.1rem !important; }
-    .btn-paren { background: #6c757d !important; color: white !important; font-size: 1.3rem !important; }
-
-    .history-panel {
-        width: 100%; border-top: 1px solid var(--border-color); padding-top: 15px;
-    }
-
-    #history-list {
-        list-style: none; padding: 0; margin: 10px 0;
-        max-height: 200px; overflow-y: auto;
-    }
-
-    #history-list li {
-        padding: 10px; border-bottom: 1px solid var(--border-color);
-        font-size: 1rem; border-radius: 8px;
-    }
-
-    /* 桌面版寬螢幕優化 */
-    @media (min-width: 900px) {
-        .container {
-            flex-direction: row;
-            max-width: 800px;
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>計算機 - 最終修正版</title>
+    <style>
+        :root {
+            --bg: #f2f2f7; --card: #ffffff; --txt: #000000;
+            --op: #ff9f0a; --eq: #34c759; --btn: #e5e5ea;
         }
-        .calculator { width: 440px; }
-        .history-panel {
-            width: 300px;
-            border-top: none;
-            border-left: 1px solid var(--border-color);
-            padding-top: 0;
-            padding-left: 20px;
+        [data-theme="dark"] {
+            --bg: #000000; --card: #1c1c1e; --txt: #ffffff;
+            --op: #ff9f0a; --eq: #30d158; --btn: #3a3a3c;
         }
-        #history-list { max-height: 450px; }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body { 
+            margin: 0; font-family: -apple-system, sans-serif; 
+            background: var(--bg); color: var(--txt);
+            display: flex; justify-content: center; padding: 20px;
+        }
+        .container { width: 100%; max-width: 400px; display: flex; flex-direction: column; gap: 15px; }
+        .calc-card { background: var(--card); padding: 20px; border-radius: 24px; shadow: 0 10px 30px rgba(0,0,0,0.1); }
+        
+        .top-bar { display: flex; justify-content: space-between; margin-bottom: 10px; font-weight: bold; }
+        
+        #display {
+            width: 100%; height: 80px; font-size: 2.5rem; text-align: right;
+            border: none; background: transparent; color: var(--txt); outline: none;
+            margin-bottom: 20px; padding: 0;
+        }
+        
+        .buttons { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; }
+        
+        button {
+            aspect-ratio: 1 / 1; border: none; border-radius: 12px;
+            font-size: 1.2rem; font-weight: bold; cursor: pointer;
+            background: var(--btn); color: var(--txt);
+        }
+        button:active { opacity: 0.7; }
+        .btn-op { background: var(--op); color: white; }
+        .btn-eq { background: var(--eq); color: white; grid-column: span 2; aspect-ratio: auto; }
+        .btn-tool { background: #8e8e93; color: white; }
+
+        .history-panel { background: var(--card); padding: 15px; border-radius: 20px; }
+        #history-list { list-style: none; padding: 0; max-height: 150px; overflow-y: auto; font-size: 0.9rem; }
+        #history-list li { border-bottom: 1px solid #eee; padding: 8px 0; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="calc-card">
+        <div class="top-bar">
+            <span onclick="document.body.toggleAttribute('data-theme')">🌓 主題</span>
+            <span id="rate-ui">稅率: 10%</span>
+        </div>
+        <input type="text" id="display" value="0" readonly>
+        <div class="buttons">
+            <button onclick="cls()" class="btn-tool">AC</button>
+            <button onclick="add('(')">(</button>
+            <button onclick="add(')')">)</button>
+            <button onclick="del()" class="btn-tool">DEL</button>
+            <button onclick="add('/')" class="btn-op">÷</button>
+
+            <button onclick="add('7')">7</button>
+            <button onclick="add('8')">8</button>
+            <button onclick="add('9')">9</button>
+            <button onclick="unit(25.4,'*')">x25.4</button>
+            <button onclick="add('*')" class="btn-op">×</button>
+
+            <button onclick="add('4')">4</button>
+            <button onclick="add('5')">5</button>
+            <button onclick="add('6')">6</button>
+            <button onclick="unit(25.4,'/')">/25.4</button>
+            <button onclick="add('-')" class="btn-op">-</button>
+
+            <button onclick="add('1')">1</button>
+            <button onclick="add('2')">2</button>
+            <button onclick="add('3')">3</button>
+            <button onclick="unit(100,'*')">x100</button>
+            <button onclick="add('+')" class="btn-op">+</button>
+
+            <button onclick="add('0')">0</button>
+            <button onclick="add('.')">.</button>
+            <button onclick="tax()">+10%</button>
+            <button onclick="calc()" class="btn-eq">=</button>
+        </div>
+    </div>
+    
+    <div class="history-panel">
+        <div style="display:flex; justify-content:space-between;">
+            <strong>歷史紀錄</strong>
+            <small onclick="localStorage.clear(); location.reload();" style="color:red; cursor:pointer;">清空</small>
+        </div>
+        <ul id="history-list"></ul>
+    </div>
+</div>
+
+<script>
+    let exp = "0";
+    let done = false;
+    const box = document.getElementById('display');
+    const hist = document.getElementById('history-list');
+
+    function fmt(s) {
+        return s.replace(/,/g, '').replace(/\d+\.?\d*/g, m => {
+            let p = m.split('.');
+            p[0] = p[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+            return p.join('.');
+        });
     }
-</style>
+
+    function add(v) {
+        if (done) {
+            if (['+','-','*','/'].includes(v)) done = false;
+            else { exp = "0"; done = false; }
+        }
+        if (exp === "0" && v !== "." && !['+','-','*','/'].includes(v)) exp = v;
+        else exp += v;
+        render();
+    }
+
+    function del() {
+        if (done) { cls(); return; }
+        exp = exp.length > 1 ? exp.slice(0, -1) : "0";
+        render();
+    }
+
+    function cls() { exp = "0"; done = false; render(); }
+
+    function render() { box.value = fmt(exp); }
+
+    function calc() {
+        try {
+            let res = eval(exp.replace(/,/g, ''));
+            let rStr = parseFloat(res.toPrecision(12)).toString();
+            let li = document.createElement('li');
+            li.innerHTML = `<div>${exp}</div><strong>= ${fmt(rStr)}</strong>`;
+            hist.prepend(li);
+            exp = rStr;
+            done = true;
+            render();
+        } catch { box.value = "Error"; exp = "0"; }
+    }
+
+    function unit(f, op) {
+        let nums = exp.match(/(\d+\.?\d*)$/);
+        if (nums) {
+            let n = eval(nums[0] + op + f);
+            exp = exp.replace(/(\d+\.?\d*)$/, parseFloat(n.toPrecision(12)).toString());
+            render();
+        }
+    }
+
+    function tax() { unit(1.1, '*'); }
+</script>
+
+</body>
+</html>
