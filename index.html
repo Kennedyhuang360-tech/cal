@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Smart Calculator Pro - 運算符優化版</title>
+    <title>Smart Calculator Pro - 終極修正版</title>
     <style>
         :root {
             --bg: #f2f2f7; --card: #ffffff; --txt: #000000;
@@ -88,8 +88,7 @@
             <button onclick="add('/')" class="btn-op">÷</button>
             
             <button onclick="add('4')">4</button>
-            <button onclick="add('5')')">5</button>
-            <button onclick="add('6')">6</button>
+            <button onclick="add('5')">5</button> <button onclick="add('6')">6</button>
             <button onclick="unit(25.4,'/')">/25.4</button>
             <button onclick="add('*')" class="btn-op">×</button>
             
@@ -138,9 +137,10 @@
     }
 
     function limitPrecision(val) {
-        if (isNaN(val)) return "0";
+        if (isNaN(val) || val === Infinity || val === -Infinity) return "0";
         var str = val.toString();
-        var limit = (str.split('.')[0].length > 6) ? 4 : 8;
+        // 依照整數位數動態決定小數點長度，避免超出螢幕
+        var limit = (str.split('.')[0].replace('-','').length > 6) ? 4 : 8;
         return parseFloat(Number(val).toFixed(limit)).toString();
     }
 
@@ -155,14 +155,10 @@
 
     function add(v) {
         var ops = ['+', '-', '*', '/'];
-        
-        // 如果剛算完結果，且按的是運算符，接續運算；按的是數字，重新開始
         if (done) { 
             if (ops.includes(v)) done = false; 
             else { exp = '0'; done = false; } 
         }
-
-        // 核心邏輯：如果最後一個字元是運算符，且現在按的也是運算符，則取代
         var lastChar = exp.slice(-1);
         if (ops.includes(lastChar) && ops.includes(v)) {
             exp = exp.slice(0, -1) + v;
@@ -210,219 +206,6 @@
             while (o > c) { raw += ')'; o--; }
             var r = new Function('return ' + raw)();
             var s = limitPrecision(r);
-            
-            var li = document.createElement('li');
-            li.innerHTML = '<div style="color:gray;font-size:11px">' + fmt(raw) + '</div><strong>= ' + fmt(s) + '</strong>';
-            li.onclick = function() { exp = s; done = false; render(); };
-            list.prepend(li);
-            exp = s; done = true; render();
-        } catch(e) { box.value = 'Error'; exp = '0'; }
-    }
-
-    function unit(f, op) {
-        var m = exp.match(/(\d+\.?\d*)$/);
-        if (m) {
-            var n = new Function('return ' + m[0] + op + f)();
-            exp = exp.substring(0, exp.length - m[0].length) + limitPrecision(n);
-            render();
-        }
-    }
-
-    function tax(id) {
-        var r = (id === 1) ? rate1 : rate2;
-        unit(1 + (r/100), '*');
-    }
-
-    function setRate(id) {
-        var current = (id === 1) ? rate1 : rate2;
-        var v = prompt('設定稅率 ' + id + ' (%):', current);
-        if (v !== null && !isNaN(v) && v !== '') {
-            var val = parseFloat(v);
-            var d = (val >= 0 ? '+' : '') + val + '%';
-            if (id === 1) {
-                rate1 = val;
-                document.getElementById('r1-ui').innerText = val + '%';
-                document.getElementById('tax1-btn').innerText = d;
-            } else {
-                rate2 = val;
-                document.getElementById('r2-ui').innerText = val + '%';
-                document.getElementById('tax2-btn').innerText = d;
-            }
-        }
-    }
-
-    function toggleMode() { document.body.classList.toggle('dark-mode'); }
-    function clearHist() { list.innerHTML = ''; }
-    save();
-</script>
-</body>
-</html>
-        #display::-webkit-scrollbar { display: none; }
-        #preview { font-size: 20px; color: var(--pre); font-weight: bold; height: 26px; margin-top: 5px; min-height: 26px; }
-        
-        .grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; }
-        
-        button { 
-            width: 100%; aspect-ratio: 1; border: none; border-radius: 15px; 
-            font-size: 20px; font-weight: bold; background: var(--btn); color: var(--txt); cursor: pointer; 
-        }
-        .btn-op { background: var(--op); color: #fff; font-size: 24px; }
-        .btn-tool { background: #8e8e93; color: #fff; font-size: 16px; }
-        .btn-undo { background: #5856d6; color: #fff; }
-        
-        .btn-eq { 
-            background: var(--eq); color: #fff; 
-            grid-column: 1 / 6; 
-            aspect-ratio: auto; height: 100%; font-size: 32px; 
-            padding: 12px 0;
-        }
-        
-        button:active { opacity: 0.5; transform: scale(0.95); }
-
-        .hist-box { background: var(--card); padding: 15px; border-radius: 20px; }
-        .hist-top { display:flex; justify-content:space-between; margin-bottom: 10px; }
-        #h-list { list-style: none; max-height: 150px; overflow-y: auto; font-size: 14px; }
-        #h-list li { border-bottom: 1px solid rgba(128,128,128,0.1); padding: 10px 0; }
-    </style>
-</head>
-<body>
-<div class="wrap">
-    <div class="box">
-        <div class="top">
-            <span onclick="toggleMode()" style="cursor:pointer; padding:6px 12px; background:var(--btn); border-radius:10px;">🌓 主題</span>
-            <span class="rate-tag" onclick="setRate(1)">⚙️1: <span id="r1-ui">10%</span></span>
-            <span class="rate-tag" onclick="setRate(2)">⚙️2: <span id="r2-ui">5%</span></span>
-        </div>
-        <div class="screen">
-            <input type="text" id="display" value="0" readonly>
-            <div id="preview"></div>
-        </div>
-        <div class="grid">
-            <button onclick="cls()" class="btn-tool">AC</button>
-            <button onclick="add('(')">(</button>
-            <button onclick="add(')')">)</button>
-            <button onclick="undo()" class="btn-undo">↩</button>
-            <button onclick="del()" class="btn-tool" style="background:#ff3b30;">DEL</button>
-            
-            <button onclick="add('7')">7</button>
-            <button onclick="add('8')">8</button>
-            <button onclick="add('9')">9</button>
-            <button onclick="unit(25.4,'*')">x25.4</button>
-            <button onclick="add('/')" class="btn-op">÷</button>
-            
-            <button onclick="add('4')">4</button>
-            <button onclick="add('5')">5</button>
-            <button onclick="add('6')">6</button>
-            <button onclick="unit(25.4,'/')">/25.4</button>
-            <button onclick="add('*')" class="btn-op">×</button>
-            
-            <button onclick="add('1')">1</button>
-            <button onclick="add('2')">2</button>
-            <button onclick="add('3')">3</button>
-            <button onclick="unit(100,'*')">x100</button>
-            <button onclick="add('-')" class="btn-op">-</button>
-            
-            <button onclick="add('0')">0</button>
-            <button onclick="add('.')">.</button>
-            <button onclick="tax(1)" id="tax1-btn" style="background:#34c759; color:white; font-size:16px;">+10%</button>
-            <button onclick="tax(2)" id="tax2-btn" style="background:#5ac8fa; color:white; font-size:16px;">+5%</button>
-            <button onclick="add('+')" class="btn-op">+</button>
-            
-            <button onclick="calc()" class="btn-eq">=</button>
-        </div>
-    </div>
-    <div class="hist-box">
-        <div class="hist-top">
-            <strong>歷史紀錄</strong>
-            <small onclick="clearHist()" style="color:red; cursor:pointer; font-weight:bold;">清空</small>
-        </div>
-        <ul id="h-list"></ul>
-    </div>
-</div>
-
-<script>
-    var exp = '0', done = false, rate1 = 10, rate2 = 5, undoStack = [];
-    var box = document.getElementById('display'), pre = document.getElementById('preview'), list = document.getElementById('h-list');
-
-    function save() {
-        if (undoStack.length === 0 || undoStack[undoStack.length - 1] !== exp) {
-            undoStack.push(exp);
-            if (undoStack.length > 50) undoStack.shift();
-        }
-    }
-
-    function undo() {
-        if (undoStack.length > 1) {
-            undoStack.pop();
-            exp = undoStack[undoStack.length - 1];
-            done = false;
-            render(true);
-        }
-    }
-
-    // 優化精準度限制，防止撐破螢幕
-    function limitPrecision(val) {
-        if (isNaN(val)) return "0";
-        var str = val.toString();
-        // 如果是長數字，動態縮減小數點位數
-        var limit = (str.split('.')[0].length > 6) ? 4 : 8;
-        return parseFloat(Number(val).toFixed(limit)).toString();
-    }
-
-    function fmt(s) {
-        var n = s.toString().replace(/,/g, '');
-        return n.replace(/\d+\.?\d*/g, function(m) {
-            var p = m.split('.');
-            p[0] = p[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-            return p.join('.');
-        });
-    }
-
-    function add(v) {
-        if (done) { if (/[+\-*/]/.test(v)) done = false; else { exp = '0'; done = false; } }
-        if (exp === '0' && v !== '.' && !/[+\-*/]/.test(v)) exp = v;
-        else exp += v;
-        render();
-    }
-
-    function del() { if (done) { cls(); return; } exp = exp.length > 1 ? exp.slice(0, -1) : '0'; render(); }
-    function cls() { exp = '0'; done = false; undoStack = []; render(); }
-
-    function render(isUndo) {
-        box.value = fmt(exp);
-        updatePre();
-        if (!isUndo) save();
-        setTimeout(function(){ box.scrollLeft = box.scrollWidth; }, 0);
-    }
-
-    function updatePre() {
-        var raw = exp.replace(/,/g, '');
-        if (/[+\-*/]/.test(raw)) {
-            try {
-                var t = raw;
-                while (t && /[+\-*/.(]$/.test(t)) t = t.slice(0,-1);
-                var o = (t.match(/\(/g) || []).length, c = (t.match(/\)/g) || []).length;
-                while (o > c) { t += ')'; o--; }
-                if (t) {
-                    var r = new Function('return ' + t)();
-                    if (r !== undefined && !isNaN(r)) { 
-                        pre.innerText = "= " + fmt(limitPrecision(r)); 
-                        return; 
-                    }
-                }
-            } catch(e) {}
-        }
-        pre.innerText = '';
-    }
-
-    function calc() {
-        try {
-            var raw = exp.replace(/,/g, '');
-            var o = (raw.match(/\(/g) || []).length, c = (raw.match(/\)/g) || []).length;
-            while (o > c) { raw += ')'; o--; }
-            var r = new Function('return ' + raw)();
-            var s = limitPrecision(r);
-            
             var li = document.createElement('li');
             li.innerHTML = '<div style="color:gray;font-size:11px">' + fmt(raw) + '</div><strong>= ' + fmt(s) + '</strong>';
             li.onclick = function() { exp = s; done = false; render(); };
