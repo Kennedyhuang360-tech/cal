@@ -3,35 +3,59 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Smart Calculator</title>
+    <title>Smart Calculator Pro</title>
     <style>
-        :root { --bg: #f2f2f7; --card: #ffffff; --txt: #000; --op: #ff9f0a; --eq: #34c759; --btn: #e5e5ea; --pre: #007aff; }
-        [data-theme="dark"] { --bg: #000; --card: #1c1c1e; --txt: #fff; --op: #ff9f0a; --eq: #30d158; --btn: #3a3a3c; --pre: #5ac8fa; }
+        :root {
+            --bg: #f2f2f7; --card: #ffffff; --txt: #000000;
+            --op: #ff9f0a; --eq: #34c759; --btn: #e5e5ea; --pre: #007aff;
+        }
+        /* 深色模式樣式 */
+        .dark-mode {
+            --bg: #000000; --card: #1c1c1e; --txt: #ffffff;
+            --op: #ff9f0a; --eq: #30d158; --btn: #3a3a3c; --pre: #5ac8fa;
+        }
         * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-        body { font-family: sans-serif; background: var(--bg); color: var(--txt); padding: 10px; display: block; }
-        .wrap { width: 100%; max-width: 380px; margin: 0 auto; }
-        .box { background: var(--card); padding: 15px; border-radius: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); margin-bottom: 15px; }
-        .top { display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 13px; font-weight: bold; }
-        .screen { background: rgba(150,150,150,0.1); border-radius: 12px; padding: 12px; text-align: right; margin-bottom: 12px; }
-        #display { width: 100%; border: none; background: transparent; color: var(--txt); font-size: 28px; text-align: right; font-weight: bold; outline: none; }
-        #preview { font-size: 16px; color: var(--pre); font-weight: bold; height: 20px; margin-top: 4px; }
-        .grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
-        button { width: 100%; aspect-ratio: 1; border: none; border-radius: 12px; font-size: 17px; font-weight: bold; background: var(--btn); color: var(--txt); cursor: pointer; }
+        body { 
+            font-family: -apple-system, sans-serif; 
+            background: var(--bg); color: var(--txt);
+            padding: 10px; transition: background 0.3s;
+        }
+        .wrap { width: 100%; max-width: 400px; margin: 0 auto; }
+        .box { 
+            background: var(--card); padding: 20px; border-radius: 24px; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1); margin-bottom: 15px; 
+        }
+        .top { display: flex; justify-content: space-between; margin-bottom: 15px; font-size: 14px; font-weight: bold; }
+        
+        /* 顯示區 - 字體加大 */
+        .screen { background: rgba(150,150,150,0.1); border-radius: 15px; padding: 18px; text-align: right; margin-bottom: 15px; }
+        #display { 
+            width: 100%; border: none; background: transparent; color: var(--txt); 
+            font-size: 38px; text-align: right; font-weight: 800; outline: none; 
+        }
+        #preview { font-size: 20px; color: var(--pre); font-weight: bold; height: 26px; margin-top: 5px; }
+        
+        .grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; }
+        button { 
+            width: 100%; aspect-ratio: 1; border: none; border-radius: 15px; 
+            font-size: 20px; font-weight: bold; background: var(--btn); color: var(--txt); cursor: pointer; 
+        }
         .btn-op { background: var(--op); color: #fff; }
-        .btn-eq { background: var(--eq); color: #fff; grid-column: span 2; aspect-ratio: auto; }
+        .btn-eq { background: var(--eq); color: #fff; grid-column: span 2; aspect-ratio: auto; font-size: 24px; }
         .btn-tool { background: #8e8e93; color: #fff; }
-        button:active { opacity: 0.5; }
+        button:active { opacity: 0.5; transform: scale(0.95); }
+
         .hist-box { background: var(--card); padding: 15px; border-radius: 20px; }
-        #h-list { list-style: none; max-height: 120px; overflow-y: auto; font-size: 13px; margin-top: 8px; }
-        #h-list li { border-bottom: 1px solid rgba(0,0,0,0.05); padding: 8px 0; }
+        #h-list { list-style: none; max-height: 150px; overflow-y: auto; font-size: 14px; margin-top: 10px; }
+        #h-list li { border-bottom: 1px solid rgba(128,128,128,0.1); padding: 10px 0; }
     </style>
 </head>
 <body>
 <div class="wrap">
     <div class="box">
         <div class="top">
-            <span onclick="document.body.toggleAttribute('data-theme')">🌓 主題</span>
-            <span id="rate-ui" onclick="setRate()">稅率: 10% ⚙️</span>
+            <span onclick="toggleMode()" style="cursor:pointer; padding:5px; background:var(--btn); border-radius:8px;">🌓 切換主題</span>
+            <span id="rate-ui" onclick="setRate()" style="cursor:pointer;">稅率: 10% ⚙️</span>
         </div>
         <div class="screen">
             <input type="text" id="display" value="0" readonly>
@@ -43,21 +67,25 @@
             <button onclick="add(')')">)</button>
             <button onclick="del()" class="btn-tool">DEL</button>
             <button onclick="add('/')" class="btn-op">÷</button>
+            
             <button onclick="add('7')">7</button>
             <button onclick="add('8')">8</button>
             <button onclick="add('9')">9</button>
             <button onclick="unit(25.4,'*')">x25.4</button>
             <button onclick="add('*')" class="btn-op">×</button>
+            
             <button onclick="add('4')">4</button>
             <button onclick="add('5')">5</button>
             <button onclick="add('6')">6</button>
             <button onclick="unit(25.4,'/')">/25.4</button>
             <button onclick="add('-')" class="btn-op">-</button>
+            
             <button onclick="add('1')">1</button>
             <button onclick="add('2')">2</button>
             <button onclick="add('3')">3</button>
             <button onclick="unit(100,'*')">x100</button>
             <button onclick="add('+')" class="btn-op">+</button>
+            
             <button onclick="add('0')">0</button>
             <button onclick="add('.')">.</button>
             <button onclick="tax()" id="tax-btn">+10%</button>
@@ -65,10 +93,14 @@
         </div>
     </div>
     <div class="hist-box">
-        <strong>歷史紀錄</strong>
+        <div style="display:flex; justify-content:space-between;">
+            <strong>歷史紀錄</strong>
+            <small onclick="clearHist()" style="color:red; cursor:pointer;">清空</small>
+        </div>
         <ul id="h-list"></ul>
     </div>
 </div>
+
 <script>
     var exp = '0', done = false, rate = 10;
     var box = document.getElementById('display');
@@ -85,7 +117,10 @@
     }
 
     function add(v) {
-        if (done) { if (['+','-','*','/'].includes(v)) done = false; else { exp = '0'; done = false; } }
+        if (done) { 
+            if (['+','-','*','/'].includes(v)) done = false; 
+            else { exp = '0'; done = false; } 
+        }
         if (exp === '0' && v !== '.' && !['+','-','*','/'].includes(v)) exp = v;
         else exp += v;
         render();
@@ -120,7 +155,6 @@
             var r = new Function('return ' + raw)();
             var s = parseFloat(r.toPrecision(12)).toString();
             var li = document.createElement('li');
-            // 注意：這裡改用傳統字串相加，絕對不可以用反引號！
             li.innerHTML = '<div style="color:gray;font-size:11px">' + fmt(raw) + '</div><strong>= ' + fmt(s) + '</strong>';
             li.onclick = function() { exp = s; done = false; render(); };
             list.prepend(li);
@@ -138,14 +172,21 @@
     }
 
     function tax() { unit(1 + (rate/100), '*'); }
+
     function setRate() {
-        var v = prompt('輸入稅率(%):', rate);
+        var v = prompt('請輸入稅率數字 (折扣請輸入負數，如 -10):', rate);
         if (v !== null && !isNaN(v) && v !== '') {
             rate = parseFloat(v);
-            document.getElementById('rate-ui').innerText = '稅率: ' + rate + '% ⚙️';
-            document.getElementById('tax-btn').innerText = '+' + rate + '%';
+            var displayRate = (rate >= 0 ? '+' : '') + rate + '%';
+            document.getElementById('rate-ui').innerText = '稅率: ' + displayRate + ' ⚙️';
+            document.getElementById('tax-btn').innerText = displayRate;
         }
     }
+
+    function toggleMode() {
+        document.body.classList.toggle('dark-mode');
+    }
+
     function clearHist() { list.innerHTML = ''; }
 </script>
 </body>
