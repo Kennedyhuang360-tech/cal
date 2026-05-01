@@ -9,7 +9,6 @@
             --bg: #f2f2f7; --card: #ffffff; --txt: #000000;
             --op: #ff9f0a; --eq: #34c759; --btn: #e5e5ea; --pre: #007aff;
         }
-        /* 深色模式樣式 */
         .dark-mode {
             --bg: #000000; --card: #1c1c1e; --txt: #ffffff;
             --op: #ff9f0a; --eq: #30d158; --btn: #3a3a3c; --pre: #5ac8fa;
@@ -27,13 +26,18 @@
         }
         .top { display: flex; justify-content: space-between; margin-bottom: 15px; font-size: 14px; font-weight: bold; }
         
-        /* 顯示區 - 字體加大 */
-        .screen { background: rgba(150,150,150,0.1); border-radius: 15px; padding: 18px; text-align: right; margin-bottom: 15px; }
+        .screen { background: rgba(150,150,150,0.1); border-radius: 15px; padding: 18px; text-align: right; margin-bottom: 15px; overflow: hidden; }
+        
+        /* 修正：加入 scroll-behavior 並確保內容不折行 */
         #display { 
             width: 100%; border: none; background: transparent; color: var(--txt); 
-            font-size: 38px; text-align: right; font-weight: 800; outline: none; 
+            font-size: 38px; text-align: right; font-weight: 800; outline: none;
+            overflow-x: auto; white-space: nowrap;
         }
-        #preview { font-size: 20px; color: var(--pre); font-weight: bold; height: 26px; margin-top: 5px; }
+        /* 隱藏捲軸但保留捲動功能 */
+        #display::-webkit-scrollbar { display: none; }
+        
+        #preview { font-size: 20px; color: var(--pre); font-weight: bold; height: 26px; margin-top: 5px; overflow: hidden; }
         
         .grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; }
         button { 
@@ -128,7 +132,15 @@
 
     function del() { if (done) { cls(); return; } exp = exp.length > 1 ? exp.slice(0, -1) : '0'; render(); }
     function cls() { exp = '0'; done = false; render(); }
-    function render() { box.value = fmt(exp); updatePre(); }
+
+    function render() {
+        box.value = fmt(exp);
+        updatePre();
+        // 核心修正：強制讓輸入框捲動到最右邊（最後一位）
+        setTimeout(function(){
+            box.scrollLeft = box.scrollWidth;
+        }, 0);
+    }
 
     function updatePre() {
         var raw = exp.replace(/,/g, '');
@@ -174,13 +186,17 @@
     function tax() { unit(1 + (rate/100), '*'); }
 
     function setRate() {
-        var v = prompt('請輸入稅率數字 (折扣請輸入負數，如 -10):', rate);
+        var v = prompt('請輸入稅率數字 (折扣請輸入負數):', rate);
         if (v !== null && !isNaN(v) && v !== '') {
             rate = parseFloat(v);
-            var displayRate = (rate >= 0 ? '+' : '') + rate + '%';
-            document.getElementById('rate-ui').innerText = '稅率: ' + displayRate + ' ⚙️';
-            document.getElementById('tax-btn').innerText = displayRate;
+            updateRateUI();
         }
+    }
+
+    function updateRateUI() {
+        var displayRate = (rate >= 0 ? '+' : '') + rate + '%';
+        document.getElementById('rate-ui').innerText = '稅率: ' + displayRate + ' ⚙️';
+        document.getElementById('tax-btn').innerText = displayRate;
     }
 
     function toggleMode() {
