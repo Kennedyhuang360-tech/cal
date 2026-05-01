@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Smart Calc Pro</title>
+    <title>Smart Calculator</title>
     <style>
         :root { --bg: #f2f2f7; --card: #ffffff; --txt: #000; --op: #ff9f0a; --eq: #34c759; --btn: #e5e5ea; --pre: #007aff; }
         [data-theme="dark"] { --bg: #000; --card: #1c1c1e; --txt: #fff; --op: #ff9f0a; --eq: #30d158; --btn: #3a3a3c; --pre: #5ac8fa; }
         * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-        body { font-family: sans-serif; background: var(--bg); color: var(--txt); padding: 10px; }
+        body { font-family: sans-serif; background: var(--bg); color: var(--txt); padding: 10px; display: block; }
         .wrap { width: 100%; max-width: 380px; margin: 0 auto; }
         .box { background: var(--card); padding: 15px; border-radius: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); margin-bottom: 15px; }
         .top { display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 13px; font-weight: bold; }
@@ -120,7 +120,9 @@
             var r = new Function('return ' + raw)();
             var s = parseFloat(r.toPrecision(12)).toString();
             var li = document.createElement('li');
+            // 注意：這裡改用傳統字串相加，絕對不可以用反引號！
             li.innerHTML = '<div style="color:gray;font-size:11px">' + fmt(raw) + '</div><strong>= ' + fmt(s) + '</strong>';
+            li.onclick = function() { exp = s; done = false; render(); };
             list.prepend(li);
             exp = s; done = true; render();
         } catch(e) { box.value = 'Error'; exp = '0'; }
@@ -144,6 +146,7 @@
             document.getElementById('tax-btn').innerText = '+' + rate + '%';
         }
     }
+    function clearHist() { list.innerHTML = ''; }
 </script>
 </body>
 </html>
