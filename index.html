@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Smart Calculator - 即時預覽版</title>
+    <title>Smart Calculator - 最終完美版</title>
     <style>
         :root {
             --bg: #f2f2f7; --card: #ffffff; --txt: #000000;
@@ -15,7 +15,7 @@
         }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body { 
-            margin: 0; font-family: -apple-system, sans-serif; 
+            margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
             background: var(--bg); color: var(--txt);
             display: flex; justify-content: center; padding: 15px;
         }
@@ -24,33 +24,38 @@
         
         .top-bar { display: flex; justify-content: space-between; margin-bottom: 10px; font-weight: bold; font-size: 0.9rem; }
         
-        /* 顯示區域容器 */
         .display-area { position: relative; width: 100%; margin-bottom: 15px; }
         #display {
-            width: 100%; height: 90px; font-size: 2.2rem; text-align: right;
+            width: 100%; height: 100px; font-size: 2.4rem; text-align: right;
             border: none; background: transparent; color: var(--txt); outline: none;
-            padding: 0 5px 30px 5px; /* 下方留空位給預覽 */
+            padding: 0 5px 35px 5px; font-weight: 600;
         }
         #preview {
-            position: absolute; right: 10px; bottom: 5px;
-            font-size: 1.2rem; color: var(--pre); font-weight: bold; opacity: 0.8;
+            position: absolute; right: 10px; bottom: 8px;
+            font-size: 1.3rem; color: var(--pre); font-weight: bold; opacity: 0.9;
         }
         
-        .buttons { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
+        .buttons { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; }
         
         button {
-            aspect-ratio: 1 / 1; border: none; border-radius: 12px;
-            font-size: 1.1rem; font-weight: bold; cursor: pointer;
+            aspect-ratio: 1 / 1; border: none; border-radius: 14px;
+            font-size: 1.2rem; font-weight: bold; cursor: pointer;
             background: var(--btn); color: var(--txt);
+            display: flex; align-items: center; justify-content: center;
         }
-        button:active { opacity: 0.7; }
-        .btn-op { background: var(--op); color: white; }
-        .btn-eq { background: var(--eq); color: white; grid-column: span 2; aspect-ratio: auto; }
+        button:active { opacity: 0.6; transform: scale(0.95); }
+        .btn-op { background: var(--op); color: white; font-size: 1.5rem; }
+        .btn-eq { background: var(--eq); color: white; grid-column: span 2; aspect-ratio: auto; font-size: 1.8rem; }
         .btn-tool { background: #8e8e93; color: white; }
 
-        .history-panel { background: var(--card); padding: 15px; border-radius: 20px; }
-        #history-list { list-style: none; padding: 0; max-height: 150px; overflow-y: auto; font-size: 0.85rem; margin: 10px 0 0 0; }
-        #history-list li { border-bottom: 1px solid rgba(0,0,0,0.05); padding: 8px 0; cursor: pointer; }
+        .history-panel { background: var(--card); padding: 18px; border-radius: 24px; }
+        .hist-header { display:flex; justify-content:space-between; align-items:center; margin-bottom: 10px; }
+        #history-list { list-style: none; padding: 0; max-height: 180px; overflow-y: auto; font-size: 0.9rem; margin: 0; }
+        #history-list li { border-bottom: 1px solid rgba(0,0,0,0.05); padding: 10px 0; cursor: pointer; }
+        
+        /* 隱藏捲軸但保留功能 */
+        #history-list::-webkit-scrollbar { width: 4px; }
+        #history-list::-webkit-scrollbar-thumb { background: #ccc; border-radius: 10px; }
     </style>
 </head>
 <body>
@@ -58,8 +63,8 @@
 <div class="container">
     <div class="calc-card">
         <div class="top-bar">
-            <span onclick="document.body.toggleAttribute('data-theme')" style="cursor:pointer;">🌓 主題切換</span>
-            <span id="rate-ui">稅率/加價: 10%</span>
+            <span onclick="toggleTheme()" style="cursor:pointer;">🌓 切換主題</span>
+            <span id="rate-ui">稅率: 10%</span>
         </div>
         <div class="display-area">
             <input type="text" id="display" value="0" readonly>
@@ -98,9 +103,9 @@
     </div>
     
     <div class="history-panel">
-        <div style="display:flex; justify-content:space-between; align-items:center;">
+        <div class="hist-header">
             <strong>歷史紀錄</strong>
-            <small onclick="clearHistory()" style="color:red; cursor:pointer; font-weight:bold;">清空</small>
+            <small onclick="clearHistory()" style="color:#ff3b30; cursor:pointer; font-weight:bold;">清空全部</small>
         </div>
         <ul id="history-list"></ul>
     </div>
@@ -113,10 +118,11 @@
     const pre = document.getElementById('preview');
     const hist = document.getElementById('history-list');
 
-    // 格式化數字顯示千分位
+    // 格式化：每三位加逗號，且不影響算式運算符
     function fmt(s) {
         if (!s) return "";
-        return s.toString().replace(/,/g, '').replace(/\d+\.?\d*/g, m => {
+        let str = s.toString().replace(/,/g, '');
+        return str.replace(/\d+\.?\d*/g, m => {
             let p = m.split('.');
             p[0] = p[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
             return p.join('.');
@@ -126,6 +132,7 @@
     function add(v) {
         const ops = ['+','-','*','/'];
         if (done) {
+            // 如果剛算完按下運算符，接續計算；按下數字則重開
             if (ops.includes(v)) {
                 done = false;
             } else {
@@ -133,8 +140,12 @@
                 done = false;
             }
         }
-        if (exp === "0" && v !== "." && !ops.includes(v)) exp = v;
-        else exp += v;
+
+        if (exp === "0" && v !== "." && !ops.includes(v) && v !== '(') {
+            exp = v;
+        } else {
+            exp += v;
+        }
         render();
     }
 
@@ -151,17 +162,33 @@
         updatePreview();
     }
 
-    // 即時預覽邏輯
     function updatePreview() {
-        const ops = ['+','-','*','/'];
         let raw = exp.replace(/,/g, '');
-        // 只有在包含運算符且結尾不是運算符時才顯示預覽
-        if (ops.some(o => raw.includes(o)) && !ops.includes(raw.slice(-1))) {
+        const ops = ['+','-','*','/'];
+        
+        // 條件：算式中必須包含運算符號
+        if (ops.some(o => raw.includes(o)) && raw.length > 0) {
             try {
-                let res = new Function('return ' + raw)();
-                if (res !== undefined && !isNaN(res)) {
-                    pre.innerText = "= " + fmt(parseFloat(res.toPrecision(12)).toString());
-                    return;
+                let tempRaw = raw;
+                // 如果最後一位是符號，先去掉最後一位再算預覽
+                if (ops.includes(raw.slice(-1))) {
+                    tempRaw = raw.slice(0, -1);
+                }
+                
+                // 自動補齊未閉合的括號
+                let openP = (tempRaw.match(/\(/g) || []).length;
+                let closeP = (tempRaw.match(/\)/g) || []).length;
+                while (openP > closeP) {
+                    tempRaw += ')';
+                    closeP++;
+                }
+
+                if (tempRaw && tempRaw !== "(" && tempRaw !== ")") {
+                    let result = new Function('return ' + tempRaw)();
+                    if (result !== undefined && !isNaN(result) && isFinite(result)) {
+                        pre.innerText = "= " + fmt(parseFloat(result.toPrecision(12)).toString());
+                        return;
+                    }
                 }
             } catch (e) {}
         }
@@ -172,12 +199,18 @@
         try {
             let raw = exp.replace(/,/g, '');
             if (raw === "0") return;
-            let res = new Function('return ' + raw)();
-            let rStr = parseFloat(res.toPrecision(12)).toString();
             
-            // 存入紀錄
+            // 補足括號再計算
+            let openP = (raw.match(/\(/g) || []).length;
+            let closeP = (raw.match(/\)/g) || []).length;
+            while (openP > closeP) { raw += ')'; openP--; }
+
+            let result = new Function('return ' + raw)();
+            let rStr = parseFloat(result.toPrecision(12)).toString();
+            
+            // 寫入紀錄
             let li = document.createElement('li');
-            li.innerHTML = `<div style="color:#888">${fmt(exp)}</div><strong>= ${fmt(rStr)}</strong>`;
+            li.innerHTML = `<div style="color:#888; font-size:0.8rem;">${fmt(raw)}</div><strong>= ${fmt(rStr)}</strong>`;
             li.onclick = () => { exp = rStr; done = false; render(); };
             hist.prepend(li);
             
@@ -185,13 +218,14 @@
             done = true;
             render();
         } catch { 
-            box.value = "Error"; 
+            box.value = "錯誤"; 
             exp = "0"; 
             pre.innerText = "";
         }
     }
 
     function unit(f, op) {
+        // 抓取最後一個數字
         let match = exp.match(/(\d+\.?\d*)$/);
         if (match) {
             let lastNum = match[0];
@@ -204,62 +238,18 @@
 
     function tax() { unit(1.1, '*'); }
 
+    function toggleTheme() {
+        document.body.toggleAttribute('data-theme');
+    }
+
     function clearHistory() {
-        if(confirm("確定清空歷史紀錄？")) hist.innerHTML = "";
+        if(confirm("確定清空所有紀錄？")) hist.innerHTML = "";
     }
 </script>
 
 </body>
 </html>
-        }
-        
-        .buttons { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
-        
-        button {
-            aspect-ratio: 1 / 1; border: none; border-radius: 12px;
-            font-size: 1.1rem; font-weight: bold; cursor: pointer;
-            background: var(--btn); color: var(--txt);
-        }
-        button:active { opacity: 0.7; }
-        .btn-op { background: var(--op); color: white; }
-        .btn-eq { background: var(--eq); color: white; grid-column: span 2; aspect-ratio: auto; }
-        .btn-tool { background: #8e8e93; color: white; }
-
-        .history-panel { background: var(--card); padding: 15px; border-radius: 20px; }
-        #history-list { list-style: none; padding: 0; max-height: 150px; overflow-y: auto; font-size: 0.85rem; margin: 10px 0 0 0; }
-        #history-list li { border-bottom: 1px solid rgba(0,0,0,0.05); padding: 8px 0; cursor: pointer; }
-    </style>
-</head>
-<body>
-
-<div class="container">
-    <div class="calc-card">
-        <div class="top-bar">
-            <span onclick="document.body.toggleAttribute('data-theme')" style="cursor:pointer;">🌓 主題切換</span>
-            <span id="rate-ui">稅率/加價: 10%</span>
-        </div>
-        <div class="display-area">
-            <input type="text" id="display" value="0" readonly>
-            <div id="preview"></div>
-        </div>
-        <div class="buttons">
-            <button onclick="cls()" class="btn-tool">AC</button>
-            <button onclick="add('(')">(</button>
-            <button onclick="add(')')">)</button>
-            <button onclick="del()" class="btn-tool">DEL</button>
-            <button onclick="add('/')" class="btn-op">÷</button>
-
-            <button onclick="add('7')">7</button>
-            <button onclick="add('8')">8</button>
-            <button onclick="add('9')">9</button>
-            <button onclick="unit(25.4,'*')">x25.4</button>
-            <button onclick="add('*')" class="btn-op">×</button>
-
-            <button onclick="add('4')">4</button>
-            <button onclick="add('5')">5</button>
-            <button onclick="add('6')">6</button>
-            <button onclick="unit(25.4,'/')">/25.4</button>
-            <button onclick="add('-')" class="btn-op">-</button>
+ton onclick="add('-')" class="btn-op">-</button>
 
             <button onclick="add('1')">1</button>
             <button onclick="add('2')">2</button>
