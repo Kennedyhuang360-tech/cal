@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Smart Calculator Pro - 即時預覽版</title>
+    <title>Smart Calculator Pro - 完美修正版</title>
     <style>
         :root {
             --bg-color: #f0f2f5;
             --card-bg: #ffffff;
             --text-primary: #333;
             --text-secondary: #888;
-            --text-preview: #007aff; /* 預覽結果顏色 */
+            --text-preview: #007aff;
             --border-color: #f0f0f0;
             --btn-bg: #e9ecef;
             --btn-text: #495057;
@@ -34,6 +34,431 @@
 
         body {
             font-family: 'Segoe UI', 'Microsoft JhengHei', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            transition: background 0.3s ease;
+        }
+
+        .container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            background: var(--card-bg);
+            padding: 25px;
+            border-radius: 24px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+            max-width: 95%;
+        }
+
+        .calculator { width: 440px; }
+
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .icon-group { display: flex; gap: 10px; }
+
+        .icon-btn {
+            background: none; border: none; cursor: pointer;
+            font-size: 1.5rem; color: var(--text-primary);
+            padding: 5px; border-radius: 8px;
+        }
+
+        .display-container {
+            position: relative;
+            margin-bottom: 20px;
+        }
+
+        #display {
+            width: 100%; height: 110px; 
+            font-size: 2.8rem !important; 
+            font-weight: 800;
+            text-align: right; 
+            padding: 10px 20px 40px 20px;
+            box-sizing: border-box;
+            border: 3px solid var(--border-color);
+            background: var(--bg-color); border-radius: 15px;
+            color: var(--text-primary); outline: none;
+        }
+
+        #preview {
+            position: absolute;
+            right: 25px;
+            bottom: 15px;
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--text-preview);
+            opacity: 0.8;
+            pointer-events: none;
+        }
+
+        .buttons {
+            display: grid; 
+            grid-template-columns: repeat(5, 1fr); 
+            gap: 12px;
+        }
+
+        button.calc-btn {
+            padding: 20px 2px; 
+            font-size: 1.8rem; 
+            font-weight: 800;
+            border: none; border-radius: 16px; cursor: pointer;
+            background: var(--btn-bg); color: var(--btn-text);
+            transition: all 0.1s; -webkit-tap-highlight-color: transparent;
+            display: flex; justify-content: center; align-items: center;
+        }
+
+        button.calc-btn:active { transform: scale(0.9); filter: brightness(0.85); }
+        
+        .btn-op { background: var(--op-color) !important; color: white !important; font-size: 2rem !important; }
+        .btn-special { background: var(--accent-color) !important; color: white !important; font-size: 1.5rem !important; }
+        .btn-extra { background: var(--extra-color) !important; color: white !important; font-size: 1.4rem !important; }
+        .btn-unit { background: var(--unit-color) !important; color: white !important; font-size: 1.2rem !important; }
+        .btn-equal { background: var(--equal-color) !important; color: white !important; font-size: 2.2rem !important; }
+        .btn-tool { background: #adb5bd !important; color: white !important; font-size: 1.3rem !important; }
+        .btn-paren { background: #6c757d !important; color: white !important; font-size: 1.8rem !important; }
+
+        .history-panel {
+            width: 320px; display: flex; flex-direction: column;
+            border-left: 1px solid var(--border-color); padding-left: 20px;
+        }
+
+        #history-list {
+            list-style: none; padding: 0; margin: 10px 0;
+            flex-grow: 1; overflow-y: auto; max-height: 500px;
+        }
+
+        #history-list li {
+            padding: 15px; border-bottom: 1px solid var(--border-color);
+            font-size: 1.2rem; cursor: pointer; border-radius: 10px; margin-bottom: 8px;
+        }
+
+        .history-footer { border-top: 1px solid var(--border-color); padding-top: 15px; }
+        #history-total { font-weight: 900; font-size: 1.1rem; color: var(--accent-color); }
+        .btn-danger { background: #ff3b30; color: white; padding: 15px; border: none; border-radius: 10px; cursor: pointer; width: 100%; margin-top: 10px; font-weight: bold; font-size: 1.1rem; }
+
+        @media (max-width: 900px) {
+            .container { flex-direction: column; align-items: center; padding: 15px; }
+            .history-panel { border-left: none; border-top: 1px solid var(--border-color); padding-left: 0; padding-top: 20px; width: 100%; }
+            .calculator { width: 100%; }
+            button.calc-btn { padding: 15px 2px; font-size: 1.6rem; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container" id="main-container">
+    <div class="calculator">
+        <div class="top-bar">
+            <div class="icon-group">
+                <button class="icon-btn" onclick="toggleTheme()">🌓</button>
+                <button class="icon-btn" onclick="toggleFullscreen()">⛶</button>
+            </div>
+            <span id="rate-label" style="font-size: 1rem; font-weight: 900;">稅率: 10%</span>
+            <button class="icon-btn" onclick="setRate()">⚙️</button>
+        </div>
+        
+        <div class="display-container">
+            <input type="text" id="display" value="0" inputmode="none">
+            <div id="preview"></div>
+        </div>
+
+        <div class="buttons">
+            <button onclick="clearDisplay()" class="calc-btn btn-tool">AC</button>
+            <button onclick="appendValue('(')" class="calc-btn btn-paren">(</button>
+            <button onclick="appendValue(')')" class="calc-btn btn-paren">)</button>
+            <button onclick="deleteLast()" class="calc-btn btn-tool">DEL</button>
+            <button onclick="appendValue('/')" class="calc-btn btn-op">÷</button>
+
+            <button onclick="appendValue('7')" class="calc-btn">7</button>
+            <button onclick="appendValue('8')" class="calc-btn">8</button>
+            <button onclick="appendValue('9')" class="calc-btn">9</button>
+            <button onclick="unitConvert(25.4, 'x')" class="calc-btn btn-unit">x25.4</button>
+            <button onclick="appendValue('*')" class="calc-btn btn-op">×</button>
+
+            <button onclick="appendValue('4')" class="calc-btn">4</button>
+            <button onclick="appendValue('5')" class="calc-btn">5</button>
+            <button onclick="appendValue('6')" class="calc-btn">6</button>
+            <button onclick="unitConvert(25.4, '/')" class="calc-btn btn-unit">/25.4</button>
+            <button onclick="appendValue('-')" class="calc-btn btn-op">-</button>
+
+            <button onclick="appendValue('1')" class="calc-btn">1</button>
+            <button onclick="appendValue('2')" class="calc-btn">2</button>
+            <button onclick="appendValue('3')" class="calc-btn">3</button>
+            <button onclick="multiplyByHundred()" class="calc-btn btn-extra">x100</button>
+            <button onclick="appendValue('+')" class="calc-btn btn-op">+</button>
+
+            <button onclick="appendValue('0')" class="calc-btn">0</button>
+            <button onclick="appendValue('.')" class="calc-btn">.</button>
+            <button onclick="addPercent()" class="calc-btn btn-special" id="percent-btn">+10%</button>
+            <button onclick="calculate()" class="calc-btn btn-equal" style="grid-column: span 2;">=</button>
+        </div>
+    </div>
+
+    <div class="history-panel">
+        <h3 style="margin: 0; font-size: 1.4rem;">歷史紀錄</h3>
+        <ul id="history-list"></ul>
+        <div class="history-footer">
+            <div id="history-total">紀錄總計: 0</div>
+            <button onclick="clearHistory()" class="btn-danger">清空紀錄</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    const display = document.getElementById('display');
+    const preview = document.getElementById('preview');
+    const historyList = document.getElementById('history-list');
+    let displayRate = 10;
+    let shouldClear = false;
+
+    window.onload = () => {
+        const savedHistory = JSON.parse(localStorage.getItem('calcHistoryFinalV8') || '[]');
+        savedHistory.forEach(item => renderHistoryItem(item.formula, item.result, item.suffix));
+        updateTotal();
+        const savedRate = localStorage.getItem('calcRateInt');
+        if (savedRate) {
+            displayRate = parseFloat(savedRate);
+            updateRateUI();
+        }
+        if(localStorage.getItem('calcTheme') === 'dark') document.body.setAttribute('data-theme', 'dark');
+        display.focus();
+    };
+
+    // --- 關鍵修復：格式化邏輯 ---
+    function formatWithCommas(numStr) {
+        let cleanStr = numStr.toString().replace(/,/g, '');
+        // 使用正則匹配數字部分（包括只有點開頭或結尾的情況）
+        return cleanStr.replace(/\d+\.?\d*/g, (match) => {
+            const parts = match.split('.');
+            parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+            return parts.join('.');
+        });
+    }
+
+    function stripCommas(str) { return str.replace(/,/g, ''); }
+
+    function formatResult(num) {
+        if (isNaN(num)) return "Error";
+        return parseFloat(Number(num).toPrecision(12)).toString();
+    }
+
+    function updatePreview() {
+        try {
+            let formula = stripCommas(display.value);
+            if (formula.length > 0 && /[+\-*/]/.test(formula)) {
+                let res = new Function('return ' + formula)();
+                if (res !== undefined && !isNaN(res)) {
+                    preview.innerText = "= " + formatWithCommas(formatResult(res));
+                    return;
+                }
+            }
+            preview.innerText = "";
+        } catch { preview.innerText = ""; }
+    }
+
+    function appendValue(value) {
+        let currentRaw = stripCommas(display.value);
+        const isOperator = ['+', '-', '*', '/'].includes(value);
+
+        if (shouldClear) {
+            shouldClear = false;
+            if (isOperator) {
+                display.value = formatWithCommas(currentRaw + value);
+            } else {
+                display.value = (value === '.') ? '0.' : value;
+            }
+        } else {
+            let start = display.selectionStart;
+            let end = display.selectionEnd;
+            
+            if (currentRaw === '0' && !isOperator && value !== '.') {
+                display.value = value;
+            } else {
+                let before = currentRaw.substring(0, start);
+                let after = currentRaw.substring(end);
+                display.value = formatWithCommas(before + value + after);
+            }
+        }
+        
+        let finalPos = display.value.length;
+        display.setSelectionRange(finalPos, finalPos);
+        updatePreview();
+        display.focus();
+    }
+
+    function clearDisplay() { 
+        display.value = '0'; 
+        preview.innerText = "";
+        shouldClear = false;
+        display.focus(); 
+    }
+
+    // --- 關鍵修復：刪除邏輯 ---
+    function deleteLast() {
+        if (shouldClear) {
+            clearDisplay();
+            return;
+        }
+
+        let fullText = display.value; // 包含逗號的當前顯示文字
+        let start = display.selectionStart;
+        let end = display.selectionEnd;
+
+        if (start !== end) {
+            // 有選取範圍時，直接操作
+            let newRaw = stripCommas(fullText.substring(0, start) + fullText.substring(end));
+            display.value = formatWithCommas(newRaw || '0');
+            display.setSelectionRange(start, start);
+        } else if (start > 0) {
+            // 獲取光標前的字符
+            let charToDelete = fullText.substring(start - 1, start);
+            let beforePart = fullText.substring(0, start);
+            let afterPart = fullText.substring(start);
+
+            // 如果要刪除的是逗號，連同逗號前的數字一起刪除，否則只刪除前一個
+            let offset = (charToDelete === ',') ? 2 : 1;
+            
+            let newRaw = stripCommas(fullText.substring(0, start - offset) + afterPart);
+            display.value = formatWithCommas(newRaw || '0');
+            
+            // 重新計算光標位置（確保刪除點後不會跳掉）
+            let newBeforeRaw = stripCommas(fullText.substring(0, start - offset));
+            let newCursorPos = formatWithCommas(newBeforeRaw).length;
+            display.setSelectionRange(newCursorPos, newCursorPos);
+        }
+        
+        updatePreview();
+        display.focus();
+    }
+
+    function unitConvert(factor, type) {
+        processLastNumber(n => type === 'x' ? n * factor : n / factor);
+    }
+
+    function multiplyByHundred() {
+        processLastNumber(n => n * 100);
+    }
+
+    function addPercent() {
+        let multiplier = 1 + (displayRate / 100);
+        processLastNumber(n => n * multiplier);
+    }
+
+    function processLastNumber(callback) {
+        try {
+            let formula = stripCommas(display.value);
+            const regex = /(\d+\.?\d*)$/;
+            const match = formula.match(regex);
+            
+            if (match) {
+                let lastNumber = parseFloat(match[0]);
+                let updatedNumber = formatResult(callback(lastNumber));
+                let prefix = formula.substring(0, formula.length - match[0].length);
+                display.value = formatWithCommas(prefix + updatedNumber);
+                shouldClear = false; 
+                updatePreview();
+                display.focus();
+            }
+        } catch { display.value = "Error"; }
+    }
+
+    function calculate() {
+        try {
+            let formula = stripCommas(display.value);
+            if (formula === '0' || formula === '' || isNaN(formula.slice(-1)) && formula.slice(-1) !== ')') return;
+            
+            let resultValue = new Function('return ' + formula)();
+            let res = formatResult(resultValue);
+            
+            saveAndRender(formula, res, "");
+            display.value = formatWithCommas(res);
+            preview.innerText = ""; 
+            shouldClear = true; 
+        } catch { display.value = "Error"; }
+    }
+
+    function saveAndRender(formula, result, suffix) {
+        renderHistoryItem(formula, result, suffix);
+        const savedHistory = JSON.parse(localStorage.getItem('calcHistoryFinalV8') || '[]');
+        savedHistory.unshift({ formula, result, suffix });
+        localStorage.setItem('calcHistoryFinalV8', JSON.stringify(savedHistory.slice(0, 50)));
+        updateTotal();
+    }
+
+    function renderHistoryItem(formula, result, suffix) {
+        let li = document.createElement('li');
+        li.innerHTML = `<div style="color:var(--text-secondary); font-size:1rem;">${formula}${suffix}</div><strong>= ${formatWithCommas(result)}</strong>`;
+        li.onclick = () => { 
+            display.value = formatWithCommas(formula); 
+            shouldClear = false;
+            updatePreview();
+            display.focus();
+        };
+        historyList.insertBefore(li, historyList.firstChild);
+    }
+
+    function updateTotal() {
+        const items = JSON.parse(localStorage.getItem('calcHistoryFinalV8') || '[]');
+        const total = items.reduce((sum, item) => sum + (Number(item.result) || 0), 0);
+        document.getElementById('history-total').innerText = `紀錄總計: ${formatWithCommas(formatResult(total))}`;
+    }
+
+    function clearHistory() {
+        if (confirm("清空歷史紀錄？")) {
+            localStorage.removeItem('calcHistoryFinalV8');
+            historyList.innerHTML = '';
+            updateTotal();
+        }
+    }
+
+    function toggleTheme() {
+        const isDark = document.body.hasAttribute('data-theme');
+        document.body.toggleAttribute('data-theme');
+        localStorage.setItem('calcTheme', isDark ? 'light' : 'dark');
+    }
+
+    function toggleFullscreen() {
+        if (!document.fullscreenElement) {
+            document.documentElement.requestFullscreen();
+        } else {
+            if (document.exitFullscreen) document.exitFullscreen();
+        }
+    }
+
+    function setRate() {
+        let userInput = prompt("請輸入百分比整數 (如 10 代表 +10%):", displayRate);
+        if (userInput !== null && !isNaN(userInput) && userInput !== "") {
+            displayRate = parseFloat(userInput);
+            localStorage.setItem('calcRateInt', displayRate);
+            updateRateUI();
+        }
+    }
+
+    function updateRateUI() {
+        let sign = displayRate >= 0 ? "+" : "";
+        document.getElementById('percent-btn').innerText = `${sign}${displayRate}%`;
+        document.getElementById('rate-label').innerText = `稅率/折扣: ${sign}${displayRate}%`;
+    }
+
+    display.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') { e.preventDefault(); calculate(); }
+        if (e.key === 'Escape') clearDisplay();
+        if (e.key === 'Backspace') { e.preventDefault(); deleteLast(); }
+        setTimeout(updatePreview, 10);
+    });
+</script>
+
+</body>
+</html>
             display: flex;
             justify-content: center;
             align-items: center;
