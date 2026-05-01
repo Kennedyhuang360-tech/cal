@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Smart Calculator Pro</title>
+    <title>Smart Calc Pro</title>
     <style>
         :root {
             --bg: #f2f2f7; --card: #ffffff; --txt: #000000;
@@ -14,57 +14,28 @@
             --op: #ff9f0a; --eq: #30d158; --btn: #3a3a3c; --pre: #5ac8fa;
         }
         * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-        
         body { 
-            font-family: -apple-system, sans-serif; 
-            background: var(--bg); color: var(--txt);
-            display: block; /* 改用 block 避免 flex 居中出錯 */
-            padding: 10px; min-height: 100vh;
+            font-family: -apple-system, sans-serif; background: var(--bg); color: var(--txt);
+            padding: 10px; min-height: 100vh; line-height: 1.4;
         }
-
-        /* 主容器，寬度設為 100% 並限制最大寬度 */
-        .main-wrapper {
-            width: 100%;
-            max-width: 400px;
-            margin: 0 auto;
-        }
-
+        .main-wrapper { width: 100%; max-width: 400px; margin: 0 auto; overflow: hidden; }
         .calc-card { 
-            background: var(--card); 
-            padding: 15px; 
-            border-radius: 20px; 
-            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
-            margin-bottom: 20px;
+            background: var(--card); padding: 15px; border-radius: 20px; 
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1); margin-bottom: 15px;
         }
-        
-        .top-bar { display: flex; justify-content: space-between; margin-bottom: 15px; font-size: 14px; font-weight: bold; }
-        
-        /* 顯示區域 */
+        .top-bar { display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 14px; font-weight: bold; }
         .display-box { 
-            background: rgba(128,128,128,0.08); 
-            border-radius: 12px; 
-            padding: 15px; 
-            margin-bottom: 15px;
-            text-align: right;
+            background: rgba(128,128,128,0.08); border-radius: 12px; padding: 15px; 
+            margin-bottom: 15px; text-align: right; overflow: hidden;
         }
         #display {
             width: 100%; border: none; background: transparent; color: var(--txt); 
             font-size: 32px; text-align: right; outline: none; font-weight: bold;
         }
-        #preview {
-            font-size: 18px; color: var(--pre); font-weight: bold; height: 24px; margin-top: 5px;
-        }
-        
-        /* 網格系統，強制 5 欄 */
-        .btn-grid { 
-            display: grid; 
-            grid-template-columns: repeat(5, 1fr); 
-            gap: 8px; 
-        }
+        #preview { font-size: 18px; color: var(--pre); font-weight: bold; height: 24px; margin-top: 5px; }
+        .btn-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
         button {
-            width: 100%;
-            aspect-ratio: 1; /* 確保是正方形 */
-            border: none; border-radius: 12px;
+            width: 100%; aspect-ratio: 1; border: none; border-radius: 12px;
             font-size: 18px; font-weight: bold; cursor: pointer;
             background: var(--btn); color: var(--txt);
         }
@@ -72,12 +43,7 @@
         .btn-op { background: var(--op); color: white; }
         .btn-eq { background: var(--eq); color: white; grid-column: span 2; aspect-ratio: auto; }
         .btn-tool { background: #8e8e93; color: white; }
-
-        .history-card { 
-            background: var(--card); 
-            padding: 15px; 
-            border-radius: 20px;
-        }
+        .history-card { background: var(--card); padding: 15px; border-radius: 20px; width: 100%; }
         .hist-header { display:flex; justify-content:space-between; margin-bottom: 10px; font-size: 14px; }
         #history-list { list-style: none; max-height: 150px; overflow-y: auto; font-size: 14px; }
         #history-list li { border-bottom: 1px solid rgba(0,0,0,0.05); padding: 10px 0; }
@@ -88,106 +54,78 @@
 <div class="main-wrapper">
     <div class="calc-card">
         <div class="top-bar">
-            <span onclick="document.body.toggleAttribute('data-theme')" style="cursor:pointer;">🌓 切換主題</span>
+            <span onclick="document.body.toggleAttribute('data-theme')" style="cursor:pointer;">🌓 主題切換</span>
             <div>
                 <span id="rate-ui">稅率: 10%</span>
                 <span onclick="setRate()" style="cursor:pointer; margin-left:5px;">⚙️</span>
             </div>
         </div>
-        
         <div class="display-box">
             <input type="text" id="display" value="0" readonly>
             <div id="preview"></div>
         </div>
-
         <div class="btn-grid">
             <button onclick="cls()" class="btn-tool">AC</button>
             <button onclick="add('(')">(</button>
             <button onclick="add(')')">)</button>
             <button onclick="del()" class="btn-tool">DEL</button>
             <button onclick="add('/')" class="btn-op">÷</button>
-
             <button onclick="add('7')">7</button>
             <button onclick="add('8')">8</button>
             <button onclick="add('9')">9</button>
             <button onclick="unit(25.4,'*')">x25.4</button>
             <button onclick="add('*')" class="btn-op">×</button>
-
             <button onclick="add('4')">4</button>
             <button onclick="add('5')">5</button>
             <button onclick="add('6')">6</button>
             <button onclick="unit(25.4,'/')">/25.4</button>
             <button onclick="add('-')" class="btn-op">-</button>
-
             <button onclick="add('1')">1</button>
             <button onclick="add('2')">2</button>
             <button onclick="add('3')">3</button>
             <button onclick="unit(100,'*')">x100</button>
             <button onclick="add('+')" class="btn-op">+</button>
-
             <button onclick="add('0')">0</button>
             <button onclick="add('.')">.</button>
             <button onclick="tax()" id="tax-btn">+10%</button>
             <button onclick="calc()" class="btn-eq">=</button>
         </div>
     </div>
-    
     <div class="history-card">
-        <div class="hist-header">
-            <strong>歷史紀錄</strong>
-            <span onclick="clearHist()" style="color:red; cursor:pointer;">清空</span>
-        </div>
+        <div class="hist-header"><strong>歷史紀錄</strong><span onclick="clearHist()" style="color:red; cursor:pointer;">清空</span></div>
         <ul id="history-list"></ul>
     </div>
 </div>
 
 <script>
-    let exp = "0", done = false, rate = 10;
-
+    var exp = "0", done = false, rate = 10;
     function fmt(s) {
-        let n = s.toString().replace(/,/g, '');
-        return n.replace(/\d+\.?\d*/g, m => {
-            let p = m.split('.');
+        var n = s.toString().replace(/,/g, '');
+        return n.replace(/\d+\.?\d*/g, function(m) {
+            var p = m.split('.');
             p[0] = p[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
             return p.join('.');
         });
     }
-
     function add(v) {
-        if (done) {
-            if (['+','-','*','/'].includes(v)) done = false;
-            else { exp = "0"; done = false; }
-        }
+        if (done) { if (['+','-','*','/'].includes(v)) done = false; else { exp = "0"; done = false; } }
         if (exp === "0" && v !== "." && !['+','-','*','/'].includes(v) && v !== '(') exp = v;
         else exp += v;
         render();
     }
-
-    function del() {
-        if (done) { cls(); return; }
-        exp = exp.length > 1 ? exp.slice(0, -1) : "0";
-        render();
-    }
-
+    function del() { if (done) { cls(); return; } exp = exp.length > 1 ? exp.slice(0, -1) : "0"; render(); }
     function cls() { exp = "0"; done = false; render(); }
-
-    function render() {
-        document.getElementById('display').value = fmt(exp);
-        updatePre();
-    }
-
+    function render() { document.getElementById('display').value = fmt(exp); updatePre(); }
     function updatePre() {
-        let raw = exp.replace(/,/g, '');
-        const ops = ['+','-','*','/'];
-        if (ops.some(o => raw.includes(o))) {
+        var raw = exp.replace(/,/g, '');
+        if (/[+\-*/]/.test(raw)) {
             try {
-                let temp = raw;
+                var temp = raw;
                 while (temp && /[+\-*/.(]$/.test(temp)) temp = temp.slice(0,-1);
-                let open = (temp.match(/\(/g) || []).length;
-                let close = (temp.match(/\)/g) || []).length;
+                var open = (temp.match(/\(/g) || []).length, close = (temp.match(/\)/g) || []).length;
                 while (open > close) { temp += ')'; open--; }
                 if (temp) {
-                    let r = new Function('return ' + temp)();
+                    var r = new Function('return ' + temp)();
                     if (r !== undefined && !isNaN(r) && isFinite(r)) {
                         document.getElementById('preview').innerText = "= " + fmt(parseFloat(r.toPrecision(12)));
                         return;
@@ -197,45 +135,39 @@
         }
         document.getElementById('preview').innerText = "";
     }
-
     function calc() {
         try {
-            let raw = exp.replace(/,/g, '');
-            let open = (raw.match(/\(/g) || []).length;
-            let close = (raw.match(/\)/g) || []).length;
+            var raw = exp.replace(/,/g, '');
+            var open = (raw.match(/\(/g) || []).length, close = (raw.match(/\)/g) || []).length;
             while (open > close) { raw += ')'; open--; }
-            let r = new Function('return ' + raw)();
-            let s = parseFloat(r.toPrecision(12)).toString();
-            let li = document.createElement('li');
-            li.innerHTML = `<div style="color:gray;font-size:12px">${fmt(raw)}</div><strong>= ${fmt(s)}</strong>`;
-            li.onclick = () => { exp = s; done = false; render(); };
+            var r = new Function('return ' + raw)();
+            var s = parseFloat(r.toPrecision(12)).toString();
+            var li = document.createElement('li');
+            // 改用傳統字串相加，避免樣板字串出錯
+            li.innerHTML = '<div style="color:gray;font-size:12px">' + fmt(raw) + '</div><strong>= ' + fmt(s) + '</strong>';
+            li.onclick = function() { exp = s; done = false; render(); };
             document.getElementById('history-list').prepend(li);
             exp = s; done = true; render();
         } catch(e) { document.getElementById('display').value = "Error"; exp = "0"; }
     }
-
     function unit(f, op) {
-        let m = exp.match(/(\d+\.?\d*)$/);
+        var m = exp.match(/(\d+\.?\d*)$/);
         if (m) {
-            let n = new Function(`return ${m[0]} ${op} ${f}`)();
+            var n = new Function('return ' + m[0] + op + f)();
             exp = exp.substring(0, exp.length - m[0].length) + parseFloat(n.toPrecision(12)).toString();
             render();
         }
     }
-
     function tax() { unit(1 + (rate/100), '*'); }
-
     function setRate() {
-        let v = prompt("輸入稅率(%):", rate);
+        var v = prompt("輸入稅率(%):", rate);
         if (v !== null && !isNaN(v) && v !== "") {
             rate = parseFloat(v);
             document.getElementById('rate-ui').innerText = "稅率: " + rate + "%";
             document.getElementById('tax-btn').innerText = "+" + rate + "%";
         }
     }
-
     function clearHist() { document.getElementById('history-list').innerHTML = ""; }
 </script>
-
 </body>
 </html>
